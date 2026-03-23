@@ -3077,18 +3077,15 @@ function printCV() {
   const cvContent = document.getElementById('cv-print');
   if (!cvContent) { alert('Génère le CV d\'abord !'); return; }
   const win = window.open('', '_blank');
-  win.document.write(`<!DOCTYPE html>
-<html><head><title>CV</title>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-  body { background:#fff; }
-  @page { margin:0; size:A4 portrait; }
-  @media print { body { margin:0; } }
-</style>
-</head><body>
-${cvContent.outerHTML}
-<script>window.onload=function(){ setTimeout(function(){ window.print(); },800); }<\/script>
-</body></html>`);
+  const scr = 'scr'+'ipt';
+  const html = '<!DOCTYPE html><html><head><title>CV</title>'
+    + '<style>*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
+    + 'body{background:#fff;}@page{margin:0;size:A4 portrait;}@media print{body{margin:0;}}'
+    + '</style></head><body>'
+    + cvContent.outerHTML
+    + '<' + scr + '>window.onload=function(){setTimeout(function(){window.print();},800);}</' + scr + '>'
+    + '</body></html>';
+  win.document.write(html);
   win.document.close();
 }
 int(),500); }<\/script></body></html>`);
