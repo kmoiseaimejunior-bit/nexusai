@@ -582,7 +582,7 @@
             <button class="action-btn" onclick="loadAdminData()" style="font-size:11px;border-color:var(--accent3);color:var(--accent3);">↻ Actualiser</button>
           </div>
           <!-- Stats principales -->
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;flex-shrink:0;">
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;flex-shrink:0;">
             <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:8px;text-align:center;">
               <div style="font-size:20px;font-weight:700;color:var(--accent);" id="stat-total">0</div>
               <div style="font-size:9px;color:var(--text3);font-family:var(--font-mono);">Total</div>
@@ -591,14 +591,25 @@
               <div style="font-size:20px;font-weight:700;color:#00d4aa;" id="stat-online">0</div>
               <div style="font-size:9px;color:var(--text3);font-family:var(--font-mono);">En ligne</div>
             </div>
+            <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:8px;text-align:center;">
+              <div style="font-size:20px;font-weight:700;color:var(--text2);" id="stat-free">0</div>
+              <div style="font-size:9px;color:var(--text3);font-family:var(--font-mono);">Free</div>
+            </div>
             <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:8px;text-align:center;">
               <div style="font-size:20px;font-weight:700;color:var(--accent2);" id="stat-pro">0</div>
               <div style="font-size:9px;color:var(--text3);font-family:var(--font-mono);">Pro</div>
             </div>
             <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:8px;text-align:center;">
-              <div style="font-size:20px;font-weight:700;color:var(--accent3);" id="stat-blocked">0</div>
-              <div style="font-size:9px;color:var(--text3);font-family:var(--font-mono);">Bloqués</div>
+              <div style="font-size:20px;font-weight:700;color:#f4c430;" id="stat-super">0</div>
+              <div style="font-size:9px;color:var(--text3);font-family:var(--font-mono);">Super</div>
             </div>
+            <span id="stat-blocked" style="display:none;">0</span>
+            </div>
+          </div>
+          <!-- Diagramme circulaire -->
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;flex-shrink:0;display:flex;align-items:center;gap:16px;">
+            <canvas id="plan-chart" width="80" height="80" style="flex-shrink:0;"></canvas>
+            <div id="plan-legend" style="font-size:11px;color:var(--text2);line-height:2;font-family:var(--font-mono);"></div>
           </div>
           <!-- Graphique activité -->
           <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;flex-shrink:0;">
@@ -873,6 +884,15 @@
           <div style="font-size:12px;color:var(--text2);">Remplis tes informations et obtiens un CV visuel professionnel.</div>
           <!-- Formulaire CV -->
           <div style="display:flex;flex-direction:column;gap:10px;" id="cv-form">
+            <!-- Photo de profil -->
+            <div style="text-align:center;padding:10px;background:var(--bg3);border-radius:10px;border:1px dashed var(--border2);">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-family:var(--font-mono);">PHOTO DE PROFIL (optionnel)</div>
+              <div style="width:60px;height:60px;border-radius:50%;background:var(--bg2);margin:0 auto 8px;overflow:hidden;border:2px solid var(--border2);" id="cv-photo-preview">
+                <span style="font-size:28px;line-height:60px;display:block;text-align:center;">👤</span>
+              </div>
+              <input type="file" id="cv-photo-input" accept="image/*" style="display:none;" onchange="previewCVPhoto(this)">
+              <button class="action-btn" onclick="document.getElementById('cv-photo-input').click()" style="font-size:10px;padding:4px 12px;">📷 Choisir une photo</button>
+            </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
               <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);">PRÉNOM NOM</div>
                 <input id="cv-name" class="modal-input" style="margin:0;" placeholder="Jean Dupont"></div>
@@ -887,6 +907,8 @@
             </div>
             <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);">VILLE / PAYS</div>
               <input id="cv-location" class="modal-input" style="margin:0;" placeholder="Abidjan, Côte d'Ivoire"></div>
+            <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);">LINKEDIN (optionnel)</div>
+              <input id="cv-linkedin" class="modal-input" style="margin:0;" placeholder="linkedin.com/in/votre-profil"></div>
             <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);">RÉSUMÉ PROFESSIONNEL</div>
               <textarea id="cv-summary" class="modal-input" rows="2" placeholder="Décris ton profil en 2-3 phrases..."></textarea></div>
             <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);">EXPÉRIENCES (une par ligne : Poste | Entreprise | Période | Description)</div>
@@ -1626,9 +1648,60 @@ async function loadAdminData() {
 }
 
 function updateAdminStats() {
-  document.getElementById('stat-total').textContent = allUsers.length;
-  document.getElementById('stat-pro').textContent = allUsers.filter(u => u.plan === 'pro').length;
-  document.getElementById('stat-blocked').textContent = allUsers.filter(u => u.plan === 'blocked').length;
+  const total = allUsers.length;
+  const freeCount = allUsers.filter(u => !u.plan || u.plan === 'free').length;
+  const proCount = allUsers.filter(u => u.plan === 'pro').length;
+  const superCount = allUsers.filter(u => u.plan === 'super').length;
+  const blockedCount = allUsers.filter(u => u.plan === 'blocked').length;
+  
+  const setEl = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  setEl('stat-total', total);
+  setEl('stat-pro', proCount);
+  setEl('stat-super', superCount);
+  setEl('stat-free', freeCount);
+  setEl('stat-blocked', blockedCount);
+
+  // Diagramme circulaire
+  const canvas = document.getElementById('plan-chart');
+  if (canvas && total > 0) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, 80, 80);
+    const data = [
+      {val: freeCount,    color: '#888780', label: 'Free'},
+      {val: proCount,     color: '#00d4aa', label: 'Pro'},
+      {val: superCount,   color: '#f4c430', label: 'Super'},
+      {val: blockedCount, color: '#ff6b4a', label: 'Bloqué'},
+    ].filter(d => d.val > 0);
+    let startAngle = -Math.PI / 2;
+    data.forEach(d => {
+      const slice = (d.val / total) * 2 * Math.PI;
+      ctx.beginPath();
+      ctx.moveTo(40, 40);
+      ctx.arc(40, 40, 36, startAngle, startAngle + slice);
+      ctx.closePath();
+      ctx.fillStyle = d.color;
+      ctx.fill();
+      startAngle += slice;
+    });
+    // Cercle central
+    ctx.beginPath();
+    ctx.arc(40, 40, 18, 0, 2 * Math.PI);
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg3') || '#1a1a2e';
+    ctx.fill();
+    // Total au centre
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 14px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(total, 40, 40);
+    // Légende
+    const legend = document.getElementById('plan-legend');
+    if (legend) {
+      legend.innerHTML = data.map(d => 
+        `<span style="color:${d.color};">■</span> ${d.label}: ${d.val} <span style="color:var(--text3);">(${Math.round(d.val/total*100)}%)</span>`
+      ).join('<br>');
+    }
+  }
   
   // Calculer utilisateurs en ligne (connectés dans les 5 dernières minutes)
   const now = Date.now();
@@ -2827,7 +2900,7 @@ async function generateCV() {
   const name = document.getElementById('cv-name').value.trim();
   if (!name) { alert('Entre au moins ton nom !'); return; }
   const cvData = {
-    name, title: document.getElementById('cv-title').value,
+    name, photo: cvPhotoBase64 || '', title: document.getElementById('cv-title').value,
     email: document.getElementById('cv-email').value,
     phone: document.getElementById('cv-phone').value,
     location: document.getElementById('cv-location').value,
@@ -2835,7 +2908,8 @@ async function generateCV() {
     experience: document.getElementById('cv-experience').value,
     education: document.getElementById('cv-education').value,
     skills: document.getElementById('cv-skills').value,
-    languages: document.getElementById('cv-languages').value
+    languages: document.getElementById('cv-languages').value,
+    linkedin: document.getElementById('cv-linkedin') ? document.getElementById('cv-linkedin').value : ''
   };
   const btn = document.querySelector('#panel-cv button.primary');
   if (btn) btn.textContent = '⏳ Génération en cours...';
@@ -2883,44 +2957,108 @@ Réponds UNIQUEMENT avec un JSON valide (pas de markdown) avec cette structure e
 }
 
 function renderCVHtml(cv) {
-  const skills = (cv.skills||[]).map(s => `<span style="display:inline-block;background:#f0f4ff;color:#1a3a6b;padding:3px 10px;border-radius:20px;font-size:11px;margin:2px;font-family:Arial;">${s}</span>`).join('');
-  const languages = (cv.languages||[]).map(s => `<span style="display:inline-block;background:#f0f9f6;color:#0a5940;padding:3px 10px;border-radius:20px;font-size:11px;margin:2px;font-family:Arial;">${s}</span>`).join('');
-  const experiences = (cv.experiences||[]).map(e => `
-    <div style="margin-bottom:14px;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <div><div style="font-weight:700;font-size:14px;color:#1a1a2e;">${e.poste||''}</div>
-        <div style="font-size:13px;color:#4a6fa5;">${e.entreprise||''}</div></div>
-        <div style="font-size:12px;color:#888;white-space:nowrap;margin-left:10px;">${e.periode||''}</div>
+  // Générer barres compétences
+  const skillBars = (cv.skills||[]).map((s,i) => {
+    const levels = [90,75,85,70,80,65,95,72,88,78];
+    const lvl = levels[i % levels.length];
+    return `<div style="margin-bottom:10px;">
+      <div style="font-size:11px;color:#ccc;margin-bottom:3px;">${s}</div>
+      <div style="background:rgba(255,255,255,0.15);border-radius:3px;height:4px;">
+        <div style="background:#4a9fd4;width:${lvl}%;height:4px;border-radius:3px;"></div>
       </div>
-      ${e.description ? `<div style="font-size:12px;color:#555;margin-top:4px;line-height:1.6;">${e.description}</div>` : ''}
-    </div>`).join('');
-  const educations = (cv.educations||[]).map(e => `
-    <div style="margin-bottom:10px;display:flex;justify-content:space-between;">
-      <div><div style="font-weight:600;font-size:13px;color:#1a1a2e;">${e.diplome||''}</div>
-      <div style="font-size:12px;color:#4a6fa5;">${e.ecole||''}</div></div>
-      <div style="font-size:12px;color:#888;">${e.annee||''}</div>
+    </div>`;
+  }).join('');
+
+  // Barres langues
+  const langBars = (cv.languages||[]).map((l,i) => {
+    const levels = [100,85,65,50];
+    const lvl = levels[i % levels.length];
+    return `<div style="margin-bottom:10px;">
+      <div style="font-size:11px;color:#ccc;margin-bottom:3px;">${l}</div>
+      <div style="background:rgba(255,255,255,0.15);border-radius:3px;height:4px;">
+        <div style="background:#4a9fd4;width:${lvl}%;height:4px;border-radius:3px;"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Expériences
+  const experiences = (cv.experiences||[]).map(e => `
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px;">
+        <div style="font-weight:700;font-size:13px;color:#1a1a2e;">${e.poste||''}</div>
+        <div style="font-size:11px;color:#666;white-space:nowrap;">${e.periode||''}</div>
+      </div>
+      <div style="font-size:12px;color:#4a6fa5;margin-bottom:3px;">${e.entreprise||''}</div>
+      ${e.description ? `<div style="font-size:12px;color:#555;line-height:1.6;">${e.description}</div>` : ''}
     </div>`).join('');
 
-  const html = `<div id="cv-print" style="background:#fff;color:#1a1a2e;font-family:Arial,sans-serif;max-width:700px;margin:0 auto;box-shadow:0 2px 20px rgba(0,0,0,0.15);border-radius:8px;overflow:hidden;">
-    <!-- En-tête -->
-    <div style="background:linear-gradient(135deg,#1a3a6b,#2d6a9f);color:#fff;padding:28px 32px;">
-      <div style="font-size:26px;font-weight:800;letter-spacing:1px;">${cv.name||''}</div>
-      <div style="font-size:15px;opacity:0.9;margin-top:4px;font-weight:300;">${cv.title||''}</div>
-      <div style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;">
-        ${cv.email ? `<span style="font-size:12px;opacity:0.85;">✉ ${cv.email}</span>` : ''}
-        ${cv.phone ? `<span style="font-size:12px;opacity:0.85;">📞 ${cv.phone}</span>` : ''}
-        ${cv.location ? `<span style="font-size:12px;opacity:0.85;">📍 ${cv.location}</span>` : ''}
+  // Formations
+  const educations = (cv.educations||[]).map(e => `
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px;">
+        <div style="font-weight:700;font-size:13px;color:#1a1a2e;">${e.diplome||''}</div>
+        <div style="font-size:11px;color:#666;">${e.annee||''}</div>
+      </div>
+      <div style="font-size:12px;color:#4a6fa5;">${e.ecole||''}</div>
+    </div>`).join('');
+
+  // Section titre colorée
+  const sectionTitle = (title) => `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;margin-top:20px;">
+      <div style="background:#1a3a6b;color:#fff;font-size:10px;font-weight:700;letter-spacing:1.5px;padding:4px 10px;text-transform:uppercase;">${title}</div>
+    </div>`;
+
+  const html = `<div id="cv-print" style="background:#fff;font-family:Arial,sans-serif;max-width:800px;margin:0 auto;box-shadow:0 4px 30px rgba(0,0,0,0.2);display:flex;min-height:900px;">
+    
+    <!-- SIDEBAR GAUCHE -->
+    <div style="width:240px;min-width:240px;background:#2c3e50;color:#fff;padding:0;flex-shrink:0;">
+      
+      <!-- Photo + nom -->
+      <div style="background:#1a3a6b;padding:24px 16px;text-align:center;">
+        <div style="width:90px;height:90px;border-radius:50%;border:3px solid #4a9fd4;overflow:hidden;margin:0 auto 12px;background:#ccc;">
+          ${cv.photo ? `<img src="${cv.photo}" style="width:100%;height:100%;object-fit:cover;">` : 
+          `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:36px;background:#4a6fa5;color:#fff;">${(cv.name||'?')[0].toUpperCase()}</div>`}
+        </div>
+        <div style="font-size:11px;color:#4a9fd4;letter-spacing:1px;text-transform:uppercase;">${cv.title||''}</div>
+      </div>
+
+      <!-- Coordonnées -->
+      <div style="padding:16px;border-bottom:1px solid rgba(255,255,255,0.1);">
+        ${cv.email ? `<div style="font-size:11px;color:#ccc;margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span style="color:#4a9fd4;">✉</span>${cv.email}</div>` : ''}
+        ${cv.phone ? `<div style="font-size:11px;color:#ccc;margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span style="color:#4a9fd4;">☏</span>${cv.phone}</div>` : ''}
+        ${cv.location ? `<div style="font-size:11px;color:#ccc;display:flex;align-items:center;gap:6px;"><span style="color:#4a9fd4;">⌂</span>${cv.location}</div>` : ''}
+      </div>
+
+      <!-- Compétences -->
+      ${skillBars ? `<div style="padding:16px;border-bottom:1px solid rgba(255,255,255,0.1);">
+        <div style="font-size:10px;letter-spacing:2px;color:#4a9fd4;text-transform:uppercase;font-weight:700;margin-bottom:12px;">Compétences</div>
+        ${skillBars}
+      </div>` : ''}
+
+      <!-- Langues -->
+      ${langBars ? `<div style="padding:16px;">
+        <div style="font-size:10px;letter-spacing:2px;color:#4a9fd4;text-transform:uppercase;font-weight:700;margin-bottom:12px;">Langues</div>
+        ${langBars}
+      </div>` : ''}
+    </div>
+
+    <!-- CONTENU PRINCIPAL -->
+    <div style="flex:1;padding:0;background:#fff;">
+      
+      <!-- En-tête nom -->
+      <div style="background:#1a3a6b;padding:28px 28px 20px;">
+        <div style="font-size:24px;font-weight:900;color:#fff;letter-spacing:2px;text-transform:uppercase;">${cv.name||''}</div>
+        ${cv.summary ? `<div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:8px;line-height:1.6;">${cv.summary}</div>` : ''}
+      </div>
+
+      <!-- Corps -->
+      <div style="padding:20px 28px;">
+        ${educations ? sectionTitle('Formation') + educations : ''}
+        ${experiences ? sectionTitle('Expérience professionnelle') + experiences : ''}
       </div>
     </div>
-    <!-- Corps -->
-    <div style="padding:24px 32px;">
-      ${cv.summary ? `<div style="margin-bottom:22px;"><div style="font-size:13px;font-weight:700;color:#1a3a6b;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid #1a3a6b;padding-bottom:4px;margin-bottom:10px;">Profil</div><div style="font-size:13px;color:#444;line-height:1.7;">${cv.summary}</div></div>` : ''}
-      ${experiences ? `<div style="margin-bottom:22px;"><div style="font-size:13px;font-weight:700;color:#1a3a6b;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid #1a3a6b;padding-bottom:4px;margin-bottom:12px;">Expériences professionnelles</div>${experiences}</div>` : ''}
-      ${educations ? `<div style="margin-bottom:22px;"><div style="font-size:13px;font-weight:700;color:#1a3a6b;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid #1a3a6b;padding-bottom:4px;margin-bottom:12px;">Formations</div>${educations}</div>` : ''}
-      ${skills ? `<div style="margin-bottom:18px;"><div style="font-size:13px;font-weight:700;color:#1a3a6b;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid #1a3a6b;padding-bottom:4px;margin-bottom:10px;">Compétences</div>${skills}</div>` : ''}
-      ${languages ? `<div><div style="font-size:13px;font-weight:700;color:#1a3a6b;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid #1a3a6b;padding-bottom:4px;margin-bottom:10px;">Langues</div>${languages}</div>` : ''}
-    </div>
   </div>`;
+
   document.getElementById('cv-output').innerHTML = html;
 }
 
@@ -2932,7 +3070,16 @@ function copyCV() {
 function printCV() {
   const cvHtml = document.getElementById('cv-output').innerHTML;
   const win = window.open('', '_blank');
-  win.document.write('<!DOCTYPE html><html><head><title>CV</title><style>body{margin:0;padding:20px;background:#f5f5f5;}@media print{body{padding:0;background:#fff;}}</style></head><body>' + cvHtml + '<script>window.onload=()=>window.print();<\/script></body></html>');
+  win.document.write(`<!DOCTYPE html><html><head><title>CV — NexusAI</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:#fff; font-family:Arial,sans-serif; }
+    @media print {
+      body { margin:0; }
+      @page { margin:0; size:A4; }
+    }
+  </style>
+  </head><body>${cvHtml}<script>window.onload=()=>{ setTimeout(()=>window.print(),500); }<\/script></body></html>`);
   win.document.close();
 }
 
@@ -3168,6 +3315,20 @@ async function handlePdfUpload(input) {
     };
     reader.readAsText(file);
   }
+}
+
+// ===== PHOTO CV =====
+let cvPhotoBase64 = null;
+function previewCVPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    cvPhotoBase64 = e.target.result;
+    const preview = document.getElementById('cv-photo-preview');
+    if (preview) preview.innerHTML = `<img src="${cvPhotoBase64}" style="width:100%;height:100%;object-fit:cover;">`;
+  };
+  reader.readAsDataURL(file);
 }
 </script>
 
