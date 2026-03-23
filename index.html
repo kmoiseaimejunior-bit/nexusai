@@ -1,0 +1,3352 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="JUNIUS IVOIR">
+<title>NexusAI — Intelligence d'Entreprise | JUNIUS IVOIR</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#080c10;--bg2:#0d1117;--bg3:#141b23;--bg4:#1a2332;
+    --border:rgba(99,179,255,0.12);--border2:rgba(99,179,255,0.22);
+    --accent:#3b8bff;--accent2:#00d4aa;--accent3:#ff6b4a;
+    --text:#e8edf5;--text2:#8b95a8;--text3:#4a5568;
+    --font-head:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;--font-mono:'DM Mono',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;z-index:0;
+    background-image:linear-gradient(rgba(59,139,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(59,139,255,0.03) 1px,transparent 1px);
+    background-size:40px 40px;pointer-events:none;}
+
+  /* ÉCRAN CLÉ API */
+  #key-screen{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:var(--bg);}
+  .key-card{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:40px;width:100%;max-width:480px;text-align:center;}
+  .key-logo{font-family:var(--font-head);font-size:30px;font-weight:800;margin-bottom:6px;}
+  .key-logo span{color:var(--accent);}
+  .key-by{font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-bottom:24px;letter-spacing:1px;}
+  .key-sub{font-size:13px;color:var(--text2);margin-bottom:28px;line-height:1.7;}
+  .key-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);text-align:left;margin-bottom:8px;}
+  .key-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:13px 16px;color:var(--text);font-size:14px;font-family:var(--font-mono);outline:none;margin-bottom:8px;transition:border-color 0.15s;}
+  .key-input:focus{border-color:var(--accent);}
+  .key-input::placeholder{color:var(--text3);}
+  .key-error{color:var(--accent3);font-size:12px;font-family:var(--font-mono);margin-bottom:12px;display:none;text-align:left;}
+  .key-btn{width:100%;padding:13px;border-radius:10px;background:var(--accent);border:none;color:#fff;font-size:15px;font-weight:600;font-family:var(--font-head);cursor:pointer;transition:all 0.15s;margin-bottom:20px;}
+  .key-btn:hover{background:#5a9fff;}
+  .key-btn:disabled{opacity:0.5;cursor:not-allowed;}
+  .key-ok{font-size:12px;color:var(--accent2);font-family:var(--font-mono);margin-bottom:12px;display:none;}
+  .key-help{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px;text-align:left;}
+  .key-help-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:10px;}
+  .key-step{font-size:13px;color:var(--text2);line-height:1.8;display:flex;gap:10px;}
+  .key-step-num{color:var(--accent);font-family:var(--font-mono);font-size:12px;flex-shrink:0;margin-top:1px;}
+  .key-link{color:var(--accent);text-decoration:none;}
+  .key-link:hover{text-decoration:underline;}
+
+  /* SHELL */
+  #app{display:none;}
+  .shell{position:relative;z-index:1;display:flex;height:100vh;}
+  .sidebar{width:240px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+  .logo{padding:22px 20px 18px;border-bottom:1px solid var(--border);font-family:var(--font-head);font-size:18px;font-weight:800;display:flex;align-items:center;gap:10px;}
+  .logo-icon{width:30px;height:30px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0;}
+  .logo span{color:var(--accent);}
+  .nav{padding:12px 10px;flex:1;display:flex;flex-direction:column;gap:2px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s;color:var(--text2);border:1px solid transparent;}
+  .nav-item:hover{background:var(--bg3);color:var(--text);}
+  .nav-item.active{background:rgba(59,139,255,0.1);color:var(--accent);border-color:rgba(59,139,255,0.2);}
+  .nav-icon{width:18px;height:18px;flex-shrink:0;}
+  .nav-section{font-size:10px;font-weight:600;color:var(--text3);padding:14px 12px 4px;letter-spacing:1px;text-transform:uppercase;font-family:var(--font-mono);}
+  .sidebar-footer{padding:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;}
+  .model-badge{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:11px;font-family:var(--font-mono);color:var(--text2);display:flex;align-items:center;gap:6px;}
+  .model-dot{width:6px;height:6px;border-radius:50%;background:var(--accent2);flex-shrink:0;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+  .change-btn{background:transparent;border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:11px;font-family:var(--font-mono);color:var(--text3);cursor:pointer;transition:all 0.15s;text-align:left;}
+  .change-btn:hover{border-color:var(--accent3);color:var(--accent3);}
+
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{height:54px;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;}
+  .tab-title{font-family:var(--font-head);font-size:15px;font-weight:700;}
+  .tab-desc{font-size:12px;color:var(--text2);margin-left:auto;font-family:var(--font-mono);}
+  .stats-bar{display:none;}
+  .stat{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:11px;font-family:var(--font-mono);color:var(--text2);display:flex;align-items:center;gap:6px;}
+  .stat-dot{width:5px;height:5px;border-radius:50%;}
+  .content{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+  .panel{display:none;flex-direction:column;height:100%;}
+  .panel.active{display:flex;}
+
+  /* CHAT */
+  .messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px;}
+  .messages::-webkit-scrollbar{width:4px;}
+  .messages::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+  .msg-row{display:flex;gap:10px;align-items:flex-start;animation:fadein 0.25s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .msg-row.user{flex-direction:row-reverse;}
+  .avatar{width:30px;height:30px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+  .avatar.ai{background:rgba(59,139,255,0.15);border:1px solid rgba(59,139,255,0.2);color:var(--accent);font-family:var(--font-mono);}
+  .avatar.user{background:rgba(0,212,170,0.15);border:1px solid rgba(0,212,170,0.2);color:var(--accent2);font-family:var(--font-mono);}
+  .bubble{max-width:72%;padding:11px 15px;border-radius:12px;font-size:13.5px;line-height:1.65;border:1px solid var(--border);}
+  .bubble.ai{background:var(--bg3);color:var(--text);border-radius:4px 12px 12px 12px;}
+  .bubble.user{background:rgba(59,139,255,0.12);color:var(--text);border-color:rgba(59,139,255,0.2);border-radius:12px 4px 12px 12px;}
+  .bubble pre{background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-family:var(--font-mono);font-size:12px;overflow-x:auto;margin:8px 0;white-space:pre-wrap;}
+  .bubble strong{color:var(--accent);font-weight:600;}
+  .typing-dots{display:flex;gap:4px;align-items:center;padding:4px 0;}
+  .typing-dots span{width:6px;height:6px;border-radius:50%;background:var(--text3);animation:bounce 1.2s infinite;}
+  .typing-dots span:nth-child(2){animation-delay:.2s}.typing-dots span:nth-child(3){animation-delay:.4s}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+  .input-area{padding:14px 20px;border-top:1px solid var(--border);background:var(--bg2);}
+  .input-row{display:flex;gap:8px;align-items:flex-end;}
+  .input-wrap{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;display:flex;align-items:flex-end;padding:8px 12px;gap:8px;transition:border-color 0.15s;}
+  .input-wrap:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,139,255,0.08);}
+  textarea{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:var(--font-body);font-size:13.5px;line-height:1.5;resize:none;max-height:120px;min-height:22px;}
+  textarea::placeholder{color:var(--text3);}
+  .send-btn{width:34px;height:34px;border-radius:8px;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;color:#fff;}
+  .send-btn:hover{background:#5a9fff;}
+  .send-btn:disabled{opacity:0.4;cursor:not-allowed;}
+  .input-hint{display:none;}
+
+  /* ANALYSE */
+  .analysis-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px;height:100%;overflow:auto;}
+  .analysis-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px;}
+  .card-title{font-family:var(--font-head);font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;}
+  .card-title span{display:none;}
+  .analysis-textarea{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-family:var(--font-body);font-size:13px;line-height:1.6;resize:none;height:160px;outline:none;transition:border-color 0.15s;}
+  .analysis-textarea:focus{border-color:var(--accent);}
+  .analysis-textarea::placeholder{color:var(--text3);}
+  .action-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .action-btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--text2);transition:all 0.15s;font-family:var(--font-mono);}
+  .action-btn:hover{background:var(--bg4);color:var(--text);border-color:var(--accent);}
+  .action-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .action-btn.primary:hover{background:#5a9fff;}
+  .result-box{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:13px;line-height:1.7;color:var(--text2);flex:1;overflow-y:auto;min-height:120px;}
+  .result-box.has-content{color:var(--text);}
+
+  /* GÉNÉRATION */
+  .gen-layout{padding:20px;display:flex;flex-direction:column;gap:16px;overflow:auto;height:100%;}
+  .gen-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .gen-type{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all 0.15s;text-align:center;}
+  .gen-type:hover,.gen-type.selected{border-color:var(--accent);background:rgba(59,139,255,0.06);}
+  .gen-type-icon{font-size:22px;margin-bottom:6px;}
+  .gen-type-label{font-size:12px;font-weight:500;color:var(--text2);font-family:var(--font-mono);}
+  .gen-type.selected .gen-type-label{color:var(--accent);}
+  .gen-main{display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1;}
+  .gen-left,.gen-right{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px;}
+  .field-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);}
+  select.styled,input.styled-in{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;font-family:var(--font-body);outline:none;width:100%;}
+  select.styled:focus,input.styled-in:focus{border-color:var(--accent);}
+
+  /* IMAGE */
+  .img-layout{padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px;overflow:auto;height:100%;}
+  .upload-zone{border:2px dashed var(--border2);border-radius:12px;padding:30px;text-align:center;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:200px;}
+  .upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:rgba(59,139,255,0.04);}
+  .upload-icon{font-size:36px;opacity:0.5;}
+  .upload-text{font-size:13px;color:var(--text2);}
+  .upload-sub{font-size:11px;color:var(--text3);font-family:var(--font-mono);}
+  #image-preview{max-width:100%;max-height:220px;border-radius:8px;border:1px solid var(--border);object-fit:contain;display:none;}
+  .img-right{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px;}
+
+  ::-webkit-scrollbar{width:4px;height:4px;}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+  /* ===== RESPONSIVE MOBILE ===== */
+  @media (max-width: 768px) {
+    .shell { flex-direction: column; }
+
+    /* Sidebar becomes bottom nav bar */
+    .sidebar {
+      width: 100%; height: auto; flex-direction: row;
+      border-right: none; border-top: 1px solid var(--border);
+      order: 2; padding: 0;
+    }
+    .logo { display: none; }
+    .nav {
+      flex-direction: row; padding: 6px 8px;
+      gap: 4px; overflow-x: auto; width: 100%;
+    }
+    .nav-section { display: none; }
+    .nav-item {
+      flex-direction: column; gap: 3px; padding: 8px 10px;
+      font-size: 10px; text-align: center; min-width: 64px;
+      border-radius: 10px; flex-shrink: 0;
+    }
+    .nav-icon { width: 20px; height: 20px; }
+    .sidebar-footer { display: none; }
+    .user-bar { display: flex !important; margin: 4px 8px; padding: 6px 10px; }
+    .logout-btn { font-size: 10px; }
+
+    /* Main takes full screen */
+    .main { order: 1; height: calc(100vh - 72px); }
+
+    /* Topbar compact */
+    .topbar { height: 46px; padding: 0 14px; }
+    .tab-title { font-size: 14px; }
+    .tab-desc { display: none; }
+
+    /* Stats bar scrollable */
+    .stats-bar {
+      padding: 6px 12px; gap: 6px;
+      overflow-x: auto; flex-wrap: nowrap;
+    }
+    .stat { font-size: 10px; padding: 4px 10px; white-space: nowrap; flex-shrink: 0; }
+
+    /* Chat messages */
+    .messages { padding: 12px; gap: 10px; }
+    .bubble { max-width: 88%; font-size: 13px; padding: 9px 12px; }
+    .avatar { width: 26px; height: 26px; font-size: 11px; }
+
+    /* Input area */
+    .input-area { padding: 8px 12px; }
+    .input-hint { display: none; }
+    textarea { font-size: 13px; }
+
+    /* Analysis layout - stack vertically */
+    .analysis-layout {
+      grid-template-columns: 1fr;
+      padding: 12px; gap: 12px;
+      overflow-y: auto;
+    }
+    .analysis-textarea { height: 120px; }
+    .result-box { min-height: 150px; }
+
+    /* Generation layout - stack vertically */
+    .gen-layout { padding: 12px; gap: 10px; }
+    .gen-grid { grid-template-columns: repeat(3,1fr); gap: 8px; }
+    .gen-type { padding: 10px 6px; }
+    .gen-type-icon { font-size: 18px; margin-bottom: 4px; }
+    .gen-type-label { font-size: 10px; }
+    .gen-main { grid-template-columns: 1fr; gap: 10px; }
+    .gen-left, .gen-right { padding: 14px; }
+
+    /* Image layout - stack vertically */
+    .img-layout { grid-template-columns: 1fr; padding: 12px; gap: 12px; }
+    .upload-zone { min-height: 140px; padding: 20px; }
+    .upload-icon { font-size: 28px; }
+
+    /* Cards */
+    .analysis-card { padding: 14px; }
+    .card-title { font-size: 13px; }
+    .action-btn { padding: 6px 10px; font-size: 11px; }
+    .action-btn.primary { padding: 8px 14px; }
+
+    /* Select & input fields */
+    select.styled, input.styled-in { font-size: 13px; padding: 8px 10px; }
+  }
+
+  @media (max-width: 380px) {
+    .nav-item { min-width: 56px; font-size: 9px; padding: 6px 8px; }
+    .bubble { max-width: 92%; font-size: 12px; }
+    .gen-grid { grid-template-columns: repeat(2,1fr); }
+  }
+
+
+  .hist-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;transition:border-color 0.15s;}
+  .hist-item:hover{border-color:var(--border2);}
+  .hist-date{font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:3px;}
+  .hist-title{font-size:13px;font-weight:500;color:var(--text);cursor:pointer;margin-bottom:6px;}
+  .hist-title:hover{color:var(--accent);}
+  .hist-actions{display:flex;gap:4px;}
+  .hist-act{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text3);cursor:pointer;font-size:12px;padding:2px 8px;transition:all 0.15s;}
+  .hist-act:hover{background:var(--bg3);color:var(--text);border-color:var(--accent);}
+
+  /* ÉCRAN CONNEXION */
+  #login-screen{position:fixed;inset:0;z-index:2000;background:var(--bg);display:flex;align-items:center;justify-content:center;}
+  .login-card{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:40px;width:100%;max-width:400px;text-align:center;}
+  .login-logo{font-family:var(--font-head);font-size:28px;font-weight:800;margin-bottom:6px;}
+  .login-logo span{color:var(--accent);}
+  .login-by{font-size:11px;color:var(--text3);font-family:var(--font-mono);letter-spacing:1px;margin-bottom:28px;}
+  .login-btn{width:100%;padding:13px;border-radius:10px;background:#fff;border:none;color:#333;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.15s;margin-bottom:14px;}
+  .login-btn:hover{background:#f5f5f5;transform:translateY(-1px);}
+  .login-btn svg{width:20px;height:20px;flex-shrink:0;}
+  .login-sub{font-size:12px;color:var(--text3);line-height:1.7;}
+  /* BARRE UTILISATEUR */
+  .user-bar{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--bg3);border-radius:8px;margin:8px 14px;border:1px solid var(--border);}
+  .user-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;}
+  .user-name{font-size:12px;color:var(--text2);flex:1;font-family:var(--font-mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .logout-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;font-family:var(--font-mono);padding:4px 8px;border-radius:6px;transition:all 0.15s;}
+  .logout-btn:hover{color:var(--accent3);}
+  /* ADMIN BADGE */
+  .admin-badge{display:inline-block;background:rgba(255,107,74,0.15);color:var(--accent3);font-size:10px;font-family:var(--font-mono);padding:2px 8px;border-radius:20px;border:1px solid rgba(255,107,74,0.3);margin-left:6px;}
+
+  /* ADMIN */
+  .user-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;}
+  .user-card-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--bg3);}
+  .user-card-info{flex:1;min-width:0;}
+  .user-card-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .user-card-email{font-size:11px;color:var(--text3);font-family:var(--font-mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .user-card-actions{display:flex;gap:4px;flex-shrink:0;}
+  .plan-badge{display:inline-block;font-size:9px;padding:2px 6px;border-radius:10px;font-family:monospace;margin-left:4px;}
+  .plan-free{background:rgba(139,149,168,0.15);color:var(--text2);}
+  .plan-pro{background:rgba(0,212,170,0.15);color:var(--accent2);}
+  .plan-blocked{background:rgba(255,107,74,0.15);color:var(--accent3);}
+  .admin-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text2);cursor:pointer;font-size:10px;padding:3px 7px;transition:all 0.15s;font-family:var(--font-mono);}
+  .admin-btn:hover{background:var(--bg3);color:var(--text);}
+  .admin-btn.pro{border-color:var(--accent2);color:var(--accent2);}
+  .admin-btn.block{border-color:var(--accent3);color:var(--accent3);}
+
+  /* BANNIÈRE UPGRADE */
+  .upgrade-banner{display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:500;background:linear-gradient(135deg,#3b8bff,#534AB7);border-radius:14px;padding:14px 20px;text-align:center;box-shadow:0 4px 20px rgba(59,139,255,0.3);max-width:340px;width:90%;}
+  .upgrade-banner.show{display:block;}
+  .upgrade-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;font-family:var(--font-head);}
+  .upgrade-sub{font-size:12px;color:rgba(255,255,255,0.8);margin-bottom:10px;}
+  .upgrade-btn{background:#fff;color:#3b8bff;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-mono);}
+  .msg-counter{font-size:11px;color:var(--text3);font-family:var(--font-mono);text-align:center;padding:4px 0;}
+  .msg-counter.warning{color:var(--accent3);}
+
+  /* PARAMÈTRES */
+  .settings-section{margin-bottom:16px;}
+  .settings-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:8px;padding:0 4px;}
+  .settings-item{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;cursor:pointer;transition:all 0.15s;}
+  .settings-item:hover{border-color:var(--border2);background:var(--bg3);}
+  .settings-item-left{display:flex;align-items:center;gap:12px;}
+  .settings-item-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .settings-item-icon.blue{background:rgba(59,139,255,0.15);}
+  .settings-item-icon.green{background:rgba(0,212,170,0.15);}
+  .settings-item-icon.orange{background:rgba(255,107,74,0.15);}
+  .settings-item-icon.purple{background:rgba(83,74,183,0.15);}
+  .settings-item-icon.gray{background:var(--bg3);}
+  .settings-item-text{font-size:13px;color:var(--text);font-weight:500;}
+  .settings-item-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+  .settings-arrow{color:var(--text3);font-size:16px;}
+  .settings-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-family:monospace;}
+  .settings-badge.pro{background:rgba(0,212,170,0.15);color:var(--accent2);}
+  .settings-badge.free{background:rgba(139,149,168,0.15);color:var(--text2);}
+  /* MODAL FEEDBACK */
+  .modal-overlay{display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;}
+  .modal-overlay.show{display:flex;}
+  .modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:24px;width:90%;max-width:420px;}
+  .modal-title{font-family:var(--font-head);font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;}
+  .modal-sub{font-size:12px;color:var(--text2);margin-bottom:16px;line-height:1.6;}
+  .modal-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;font-family:var(--font-body);outline:none;margin-bottom:10px;resize:none;}
+  .modal-input:focus{border-color:var(--accent);}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+  .modal-btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--text2);transition:all 0.15s;}
+  .modal-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .modal-btn.primary:hover{background:#5a9fff;}
+
+  /* MESSAGERIE SUPPORT */
+  .support-thread{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
+  .support-msg{max-width:85%;padding:9px 13px;border-radius:12px;font-size:12px;line-height:1.6;}
+  .support-msg.user{background:rgba(59,139,255,0.12);color:var(--text);border-radius:4px 12px 12px 12px;align-self:flex-start;border:1px solid rgba(59,139,255,0.2);}
+  .support-msg.admin{background:var(--bg3);color:var(--text);border-radius:12px 4px 12px 12px;align-self:flex-end;border:1px solid var(--border2);}
+  .support-msg-meta{font-size:10px;color:var(--text3);font-family:monospace;margin-bottom:3px;}
+  .support-msg-text{color:var(--text2);}
+  .support-reply-box{display:flex;gap:8px;margin-top:8px;}
+  .support-reply-input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text);font-size:12px;font-family:var(--font-body);outline:none;resize:none;}
+  .support-reply-input:focus{border-color:var(--accent);}
+  .feedback-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px;}
+  .feedback-card.unread{border-color:var(--accent);}
+  .feedback-header{padding:10px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:background 0.15s;}
+  .feedback-header:hover{background:var(--bg3);}
+  .feedback-body{display:none;padding:0 14px 12px;border-top:1px solid var(--border);}
+  .feedback-body.open{display:block;}
+  /* BOÎTE RÉCEPTION UTILISATEUR */
+  .inbox-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all 0.15s;}
+  .inbox-item:hover{border-color:var(--border2);}
+  .inbox-item.unread{border-color:var(--accent);}
+  .inbox-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+</style>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<!-- ===== ÉCRAN SAISIE CLÉ API ===== -->
+<div id="key-screen">
+  <div class="key-card">
+    <div class="key-logo">Nexus<span>AI</span></div>
+    <div class="key-by">PAR JUNIUS IVOIR</div>
+    <p class="key-sub">Entre ta clé <strong style='color:var(--accent2)'>OpenRouter gratuite</strong> pour accéder à l'application.<br>Aucune carte bancaire requise. Clé mémorisée automatiquement.</p>
+
+    <div class="key-label">Clé API OpenRouter (gratuite)</div>
+    <input class="key-input" id="api-key-input" type="password"
+      placeholder="sk-or-v1-xxxxxxxxxxxxxxxxxxxxxxxx"
+      onkeydown="if(event.key==='Enter')startApp()">
+    <div class="key-error" id="key-error">⚠ La clé est trop courte. Vérifie sur openrouter.ai/keys</div>
+    <button class="key-btn" id="key-btn" onclick="startApp()">Accéder à NexusAI →</button>
+    <div class="key-ok" id="key-ok">✓ Clé reconnue — ouverture en cours...</div>
+
+    <div class="key-help">
+      <div class="key-help-title">Comment obtenir ta clé ?</div>
+      <div class="key-step"><div class="key-step-num">1.</div><div>Va sur <a class="key-link" href="https://console.groq.com" target="_blank">console.groq.com</a></div></div>
+      <div class="key-step"><div class="key-step-num">2.</div><div>Crée un compte gratuit</div></div>
+      <div class="key-step"><div class="key-step-num">3.</div><div>Clique sur <strong>API Keys</strong> → <strong>Create Key</strong></div></div>
+      <div class="key-step"><div class="key-step-num">4.</div><div>Colle la clé ci-dessus et c'est tout !</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== APPLICATION ===== -->
+
+<!-- ÉCRAN CONNEXION -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">Nexus<span>AI</span></div>
+    <div class="login-by">PAR JUNIUS IVOIR</div>
+    <button class="login-btn" onclick="signInWithGoogle()">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continuer avec Google
+    </button>
+    <p class="login-sub">Tes conversations seront sauvegardées<br>et accessibles sur tous tes appareils.</p>
+  </div>
+</div>
+
+<div id="app">
+<div class="shell">
+  <aside class="sidebar">
+    <div class="logo"><div class="logo-icon">N</div>Nexus<span>AI</span></div>
+    <nav class="nav">
+      <div class="nav-section">Modules</div>
+      <div class="nav-item active" onclick="switchPanel('chat',this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Chat IA
+      </div>
+      <div class="nav-item" onclick="switchPanel('analysis',this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Analyse de texte
+      </div>
+      <div class="nav-item" onclick="switchPanel('generation',this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Génération
+      </div>
+      <div class="nav-item" onclick="switchPanel('image',this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Analyse d'image
+      </div>
+      <div class="nav-item" onclick="switchPanel('history',this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Historique
+      </div>
+      <div class="nav-item" onclick="switchPanel('serie',this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        Série Littéraire
+      </div>
+      <div class="nav-item" onclick="switchPanel('cv',this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        CV
+      </div>
+      <div class="nav-item" onclick="switchPanel('settings',this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Paramètres
+      </div>
+      <div class="nav-item" id="nav-admin" style="display:none;color:var(--accent3);" onclick="switchPanel('admin',this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Admin
+      </div>
+      <div class="nav-item" id="nav-mod" style="display:none;color:#7F77DD;" onclick="switchPanel('moderator',this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="#7F77DD" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Modérateur
+      </div>
+    </nav>
+    <div class="sidebar-footer"><div class="user-bar" id="user-bar" style="display:none">
+      <img class="user-avatar" id="user-avatar" src="" alt="">
+      <span class="user-name" id="user-name">Utilisateur</span>
+      <button class="logout-btn" onclick="signOut()">Déconnexion</button>
+    </div>
+      <div class="model-badge"><div class="model-dot"></div>NexusAI Engine</div>
+      
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="tab-title" id="panel-title">Chat IA</div>
+      <div class="tab-desc" id="panel-desc">Conversation intelligente en temps réel</div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-dot" style="background:var(--accent2)"></div>Modèle actif</div>
+      <div class="stat"><div class="stat-dot" style="background:var(--accent)"></div>API connectée</div>
+      <div class="stat" id="msg-count"><div class="stat-dot" style="background:var(--text3)"></div>0 message</div>
+    </div>
+    <div class="content">
+
+      <!-- CHAT -->
+      <div class="panel active" id="panel-chat">
+        <div class="messages" id="chat-messages">
+          <div class="msg-row">
+            <div class="avatar ai">AI</div>
+            <div class="bubble ai">Bonjour ! Je suis <strong>NexusAI</strong>, votre assistant d'entreprise conçu par <strong>JUNIUS IVOIR</strong>.<br><br>Je peux analyser des documents, générer du contenu professionnel, résumer des rapports ou répondre à vos questions métier. Comment puis-je vous aider ?</div>
+          </div>
+        </div>
+        <div class="input-area">
+          <div class="input-row">
+            <div class="input-wrap">
+              <textarea id="chat-input" placeholder="Posez votre question..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+            </div>
+            <button class="send-btn" id="send-btn" onclick="sendChat()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+          <div id="msg-counter-display" class="msg-counter"></div>
+        </div>
+      </div>
+
+      <!-- ANALYSE -->
+      <div class="panel" id="panel-analysis">
+        <div class="analysis-layout">
+          <div class="analysis-card">
+            <div class="card-title">Texte à analyser </div>
+            <textarea class="analysis-textarea" id="analysis-input" placeholder="Collez votre texte : email, rapport, contrat, feedback..."></textarea>
+            <div class="action-row">
+              <button class="action-btn primary" onclick="runAnalysis('resume')">Résumer</button>
+              <button class="action-btn" onclick="runAnalysis('sentiment')">Sentiment</button>
+              <button class="action-btn" onclick="runAnalysis('keywords')">Mots-clés</button>
+              <button class="action-btn" onclick="runAnalysis('structure')">Structurer</button>
+            </div>
+          </div>
+          <div class="analysis-card">
+            <div class="card-title">Résultat </div>
+            <div class="result-box" id="analysis-result">Le résultat apparaîtra ici...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GÉNÉRATION -->
+      <div class="panel" id="panel-generation">
+        <div class="gen-layout">
+          <div class="gen-grid">
+            <div class="gen-type selected" onclick="selectGenType(this,'Email professionnel')"><div class="gen-type-icon">📧</div><div class="gen-type-label">Email</div></div>
+            <div class="gen-type" onclick="selectGenType(this,'Rapport business')"><div class="gen-type-icon">📊</div><div class="gen-type-label">Rapport</div></div>
+            <div class="gen-type" onclick="selectGenType(this,'Post LinkedIn')"><div class="gen-type-icon">💼</div><div class="gen-type-label">LinkedIn</div></div>
+            <div class="gen-type" onclick="selectGenType(this,'Présentation')"><div class="gen-type-icon">📑</div><div class="gen-type-label">Présentation</div></div>
+            <div class="gen-type" onclick="selectGenType(this,'Proposition commerciale')"><div class="gen-type-icon">🤝</div><div class="gen-type-label">Proposition</div></div>
+            <div class="gen-type" onclick="selectGenType(this,'Description produit')"><div class="gen-type-icon">🏷️</div><div class="gen-type-label">Description</div></div>
+          </div>
+          <div class="gen-main">
+            <div class="gen-left">
+              <div class="card-title">Paramètres </div>
+              <div><div class="field-label" style="margin-bottom:6px">Type</div><input type="text" id="gen-type-input" class="styled-in" value="Email professionnel"></div>
+              <div><div class="field-label" style="margin-bottom:6px">Sujet / contexte</div><textarea class="analysis-textarea" id="gen-subject" style="height:80px" placeholder="Ex: Proposer un partenariat commercial à une entreprise tech..."></textarea></div>
+              <div><div class="field-label" style="margin-bottom:6px">Ton</div><select class="styled" id="gen-tone"><option>Professionnel</option><option>Formel</option><option>Amical</option><option>Persuasif</option><option>Concis</option></select></div>
+              <div><div class="field-label" style="margin-bottom:6px">Langue</div><select class="styled" id="gen-lang"><option>Français</option><option>Anglais</option><option>Espagnol</option></select></div>
+              <button class="action-btn primary" onclick="runGeneration()" style="margin-top:auto">Générer →</button>
+            </div>
+            <div class="gen-right">
+              <div class="card-title">Contenu généré </div>
+              <div class="result-box" id="gen-result" style="flex:1">Le contenu apparaîtra ici...</div>
+              <div class="action-row">
+                <button class="action-btn" onclick="copyResult('gen-result')">Copier</button>
+                <button class="action-btn" onclick="runGeneration()">Régénérer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- IMAGE -->
+      <div class="panel" id="panel-image">
+        <div class="img-layout">
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div class="upload-zone" id="drop-zone" onclick="document.getElementById('img-file').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event)">
+              <input type="file" id="img-file" accept="image/*" style="display:none" onchange="handleFile(this.files[0])">
+              <img id="image-preview" alt="Preview">
+              <div id="upload-placeholder">
+                <div class="upload-icon">🖼️</div>
+                <div class="upload-text">Glissez une image ou cliquez ici</div>
+                <div class="upload-sub">JPG · PNG · WEBP</div>
+              </div>
+            </div>
+            <div class="action-row">
+              <button class="action-btn primary" onclick="analyzeImage('describe')">Décrire</button>
+              <button class="action-btn" onclick="analyzeImage('extract')">Extraire texte</button>
+              <button class="action-btn" onclick="analyzeImage('data')">Analyser données</button>
+              <button class="action-btn" onclick="analyzeImage('suggest')">Suggestions</button>
+            </div>
+          </div>
+          <div class="img-right">
+            <div class="card-title">Analyse </div>
+            <div class="result-box" id="img-result" style="flex:1">Chargez une image puis choisissez une action...</div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="panel" id="panel-history">
+        <div style="padding:16px;height:100%;display:flex;flex-direction:column;gap:12px;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+            <div style="font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--text);">Conversations</div>
+            <button class="action-btn" onclick="clearAllHistory()" style="font-size:11px;color:var(--accent3);border-color:var(--accent3);">Tout effacer</button>
+          </div>
+          <div id="history-list" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">
+            <div id="history-empty" style="text-align:center;padding:40px 20px;color:var(--text3);font-size:13px;line-height:1.8;">
+              Aucune conversation.<br>Elles apparaîtront ici automatiquement.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN PANEL -->
+      <div class="panel" id="panel-admin">
+        <div style="padding:16px;height:100%;display:flex;flex-direction:column;gap:14px;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+            <div style="font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--accent3);">
+              Tableau de bord Admin
+            </div>
+            <button class="action-btn" onclick="loadAdminData()" style="font-size:11px;border-color:var(--accent3);color:var(--accent3);">↻ Actualiser</button>
+          </div>
+          <!-- Stats principales -->
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;flex-shrink:0;">
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:8px;text-align:center;">
+              <div style="font-size:20px;font-weight:700;color:var(--accent);" id="stat-total">0</div>
+              <div style="font-size:9px;color:var(--text3);font-family:var(--font-mono);">Total</div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:8px;text-align:center;">
+              <div style="font-size:20px;font-weight:700;color:#00d4aa;" id="stat-online">0</div>
+              <div style="font-size:9px;color:var(--text3);font-family:var(--font-mono);">En ligne</div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:8px;text-align:center;">
+              <div style="font-size:20px;font-weight:700;color:var(--text2);" id="stat-free">0</div>
+              <div style="font-size:9px;color:var(--text3);font-family:var(--font-mono);">Free</div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:8px;text-align:center;">
+              <div style="font-size:20px;font-weight:700;color:var(--accent2);" id="stat-pro">0</div>
+              <div style="font-size:9px;color:var(--text3);font-family:var(--font-mono);">Pro</div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:8px;text-align:center;">
+              <div style="font-size:20px;font-weight:700;color:#f4c430;" id="stat-super">0</div>
+              <div style="font-size:9px;color:var(--text3);font-family:var(--font-mono);">Super</div>
+            </div>
+            <span id="stat-blocked" style="display:none;">0</span>
+            </div>
+          </div>
+          <!-- Diagramme circulaire -->
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;flex-shrink:0;display:flex;align-items:center;gap:16px;">
+            <canvas id="plan-chart" width="80" height="80" style="flex-shrink:0;"></canvas>
+            <div id="plan-legend" style="font-size:11px;color:var(--text2);line-height:2;font-family:var(--font-mono);"></div>
+          </div>
+          <!-- Graphique activité -->
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;flex-shrink:0;">
+            <div style="font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-bottom:8px;">ACTIVITÉ — 7 DERNIERS JOURS</div>
+            <div id="activity-chart" style="display:flex;gap:4px;align-items:flex-end;height:40px;"></div>
+          </div>
+          <!-- Filtre feedbacks -->
+          <div id="admin-feedback-filters" style="display:none;gap:6px;flex-shrink:0;">
+            <button class="action-btn" onclick="filterAdminFeedbacks('all')" style="font-size:10px;">Tous</button>
+            <button class="action-btn" onclick="filterAdminFeedbacks('open')" style="font-size:10px;">⏳ En attente</button>
+            <button class="action-btn" onclick="filterAdminFeedbacks('resolved')" style="font-size:10px;">✓ Résolus</button>
+          </div>
+          <!-- Onglets Admin -->
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <button class="action-btn" id="tab-users" onclick="showAdminTab('users')" style="flex:1;font-size:11px;background:var(--accent);border-color:var(--accent);color:#fff;">👥 Utilisateurs</button>
+            <button class="action-btn" id="tab-feedbacks" onclick="showAdminTab('feedbacks')" style="flex:1;font-size:11px;">💬 Feedbacks</button>
+            <button class="action-btn" id="tab-mods" onclick="showAdminTab('mods')" style="flex:1;font-size:11px;">🛡 Modérateurs</button>
+            <button class="action-btn" id="tab-approvals" onclick="showAdminTab('approvals')" style="flex:1;font-size:11px;">✅ Validations</button>
+          </div>
+
+          <!-- Recherche -->
+          <input type="text" id="admin-search" placeholder="Rechercher un utilisateur..."
+            style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;font-family:var(--font-body);outline:none;width:100%;"
+            oninput="filterAdminUsers(this.value)">
+          <!-- Liste utilisateurs -->
+          <div id="admin-users" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">
+            <div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">Chargement...</div>
+          </div>
+          <!-- Liste feedbacks -->
+          <div id="admin-feedbacks" style="display:none;flex-direction:column;gap:6px;flex:1;overflow-y:auto;">
+            <div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">Aucun feedback reçu</div>
+          </div>
+
+          <!-- Modérateurs -->
+          <div id="admin-mods" style="display:none;flex-direction:column;gap:10px;flex:1;overflow-y:auto;">
+            <div style="background:var(--bg3);border-radius:10px;padding:12px;border:1px solid var(--border);">
+              <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6;">
+                Les modérateurs peuvent gérer les feedbacks et proposer l'activation Pro.<br>
+                Chaque demande Pro d'un modérateur nécessite <strong style="color:var(--accent);">ta validation</strong>.
+              </div>
+              <div style="display:flex;gap:8px;">
+                <input type="text" id="mod-email-input" placeholder="Email du modérateur..."
+                  style="flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text);font-size:12px;font-family:var(--font-body);outline:none;">
+                <button class="action-btn primary" onclick="addModerator()" style="font-size:11px;white-space:nowrap;">+ Ajouter</button>
+              </div>
+            </div>
+            <div id="mods-list" style="display:flex;flex-direction:column;gap:6px;">
+              <div style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">Aucun modérateur</div>
+            </div>
+          </div>
+
+          <!-- Validations Pro en attente -->
+          <div id="admin-approvals" style="display:none;flex-direction:column;gap:6px;flex:1;overflow-y:auto;">
+            <div style="font-size:12px;color:var(--text2);padding:8px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);margin-bottom:4px;">
+              ⏳ Demandes d'activation Pro soumises par les modérateurs — en attente de ta validation
+            </div>
+            <div id="approvals-list" style="display:flex;flex-direction:column;gap:6px;">
+              <div style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">Aucune demande en attente</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PARAMÈTRES -->
+      <div class="panel" id="panel-settings">
+        <div style="padding:16px;height:100%;overflow-y:auto;">
+
+          <!-- Profil utilisateur -->
+          <div class="settings-section">
+            <div class="settings-title">Mon compte</div>
+            <div class="settings-item" style="cursor:default;">
+              <div class="settings-item-left">
+                <img id="settings-avatar" src="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--border2);">
+                <div>
+                  <div id="settings-name" style="font-size:14px;font-weight:600;color:var(--text);">Utilisateur</div>
+                  <div id="settings-email" style="font-size:11px;color:var(--text3);font-family:monospace;"></div>
+                </div>
+              </div>
+              <span id="settings-plan-badge" class="settings-badge free">FREE</span>
+            </div>
+          </div>
+
+          <!-- Plan & Usage -->
+          <div class="settings-section">
+            <div class="settings-title">Mon plan</div>
+            <div class="settings-item" style="cursor:default;">
+              <div class="settings-item-left">
+                <div class="settings-item-icon blue">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b8bff" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                </div>
+                <div>
+                  <div class="settings-item-text">Utilisation aujourd'hui</div>
+                  <div class="settings-item-sub" id="settings-usage">Chargement...</div>
+                </div>
+              </div>
+            </div>
+            <div class="settings-item" onclick="openUpgradeModal()">
+              <div class="settings-item-left">
+                <div class="settings-item-icon green">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <div>
+                  <div class="settings-item-text">Passer en Pro</div>
+                  <div class="settings-item-sub">Messages illimités + fonctions avancées</div>
+                </div>
+              </div>
+              <span class="settings-arrow">›</span>
+            </div>
+          </div>
+
+          <!-- Aide & Support -->
+          <div class="settings-section">
+            <div class="settings-title">Aide & Support</div>
+            <!-- Boîte réception messages admin -->
+            <div id="inbox-section" style="margin-bottom:8px;">
+              <div id="inbox-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+            </div>
+
+            <div class="settings-item" onclick="openFeedbackModal('suggestion')">
+              <div class="settings-item-left">
+                <div class="settings-item-icon purple">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7F77DD" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                </div>
+                <div>
+                  <div class="settings-item-text">Envoyer un retour d'expérience</div>
+                  <div class="settings-item-sub">Suggère des améliorations</div>
+                </div>
+              </div>
+              <span class="settings-arrow">›</span>
+            </div>
+            <div class="settings-item" onclick="openFeedbackModal('bug')">
+              <div class="settings-item-left">
+                <div class="settings-item-icon orange">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff6b4a" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                <div>
+                  <div class="settings-item-text">Signaler un problème</div>
+                  <div class="settings-item-sub">Un bug ? Dis-le nous</div>
+                </div>
+              </div>
+              <span class="settings-arrow">›</span>
+            </div>
+            <div class="settings-item" onclick="openFeedbackModal('contact')">
+              <div class="settings-item-left">
+                <div class="settings-item-icon blue">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b8bff" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </div>
+                <div>
+                  <div class="settings-item-text">Contacter l'administrateur</div>
+                  <div class="settings-item-sub">Une question ? On vous répond</div>
+                </div>
+              </div>
+              <span class="settings-arrow">›</span>
+            </div>
+          </div>
+
+          <!-- À propos -->
+          <div class="settings-section">
+            <div class="settings-title">À propos</div>
+            <div class="settings-item" style="cursor:default;">
+              <div class="settings-item-left">
+                <div class="settings-item-icon gray">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                <div>
+                  <div class="settings-item-text">NexusAI v1.0</div>
+                  <div class="settings-item-sub">Conçu par JUNIUS IVOIR</div>
+                </div>
+              </div>
+            </div>
+            <div class="settings-item" onclick="confirmSignOut()">
+              <div class="settings-item-left">
+                <div class="settings-item-icon orange">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff6b4a" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </div>
+                <div>
+                  <div class="settings-item-text" style="color:var(--accent3);">Se déconnecter</div>
+                  <div class="settings-item-sub">Retour à l'écran de connexion</div>
+                </div>
+              </div>
+              <span class="settings-arrow" style="color:var(--accent3);">›</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- MODAL FEEDBACK -->
+      <div class="modal-overlay" id="feedback-modal">
+        <div class="modal-box">
+          <div class="modal-title" id="feedback-title">Retour d'expérience</div>
+          <div class="modal-sub" id="feedback-sub">Dis-nous ce que tu penses de NexusAI</div>
+          <select id="feedback-type-select" class="modal-input" style="height:40px;cursor:pointer;">
+            <option value="suggestion">💡 Suggestion d'amélioration</option>
+            <option value="bug">🐛 Signaler un bug</option>
+            <option value="contact">✉️ Contacter l'admin</option>
+            <option value="compliment">⭐ Laisser un avis positif</option>
+          </select>
+          <textarea class="modal-input" id="feedback-text" rows="4" placeholder="Décris ton expérience, ta suggestion ou ton problème..."></textarea>
+          <div class="modal-actions">
+            <button class="modal-btn" onclick="closeFeedbackModal()">Annuler</button>
+            <button class="modal-btn primary" onclick="sendFeedback()">Envoyer →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL UPGRADE -->
+      <div class="modal-overlay" id="upgrade-modal">
+        <div class="modal-box" style="text-align:center;">
+          <div style="font-size:36px;margin-bottom:12px;">⭐</div>
+          <div class="modal-title" id="upgrade-modal-title">Passer en Pro</div>
+          <div class="modal-sub">Contacte l'administrateur pour activer la version Pro et profiter de messages illimités et de toutes les fonctionnalités avancées.</div>
+          <div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:16px;text-align:left;">
+            <div style="font-size:12px;color:var(--text2);line-height:1.8;">
+              ✓ Messages illimités<br>
+              ✓ Analyse de documents avancée<br>
+              ✓ Génération de contenu premium<br>
+              ✓ Analyse d'images illimitée<br>
+              ✓ Historique cloud illimité
+            </div>
+          </div>
+          <div class="modal-actions" style="justify-content:center;">
+            <button class="modal-btn" onclick="document.getElementById('upgrade-modal').classList.remove('show')">Fermer</button>
+            <button class="modal-btn primary" onclick="openFeedbackModal('contact');document.getElementById('upgrade-modal').classList.remove('show')">Contacter l'admin →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL MODÉRATEUR (accès restreints) -->
+      <div class="panel" id="panel-moderator">
+        <div style="padding:16px;height:100%;display:flex;flex-direction:column;gap:12px;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+            <div style="font-family:var(--font-head);font-size:14px;font-weight:700;color:#7F77DD;">
+              🛡 Espace Modérateur
+            </div>
+            <button class="action-btn" onclick="loadModeratorData()" style="font-size:11px;border-color:#7F77DD;color:#7F77DD;">↻ Actualiser</button>
+          </div>
+          <!-- Stats modérateur -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;flex-shrink:0;">
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:20px;font-weight:700;color:#7F77DD;" id="mod-stat-feedbacks">0</div>
+              <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);">Feedbacks</div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:20px;font-weight:700;color:var(--accent3);" id="mod-stat-pending">0</div>
+              <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);">En attente</div>
+            </div>
+          </div>
+          <!-- Onglets modérateur -->
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <button class="action-btn" id="mod-tab-feedbacks" onclick="showModTab('feedbacks')" style="flex:1;font-size:11px;background:rgba(83,74,183,0.3);border-color:#7F77DD;color:#7F77DD;">💬 Feedbacks</button>
+            <button class="action-btn" id="mod-tab-users" onclick="showModTab('users')" style="flex:1;font-size:11px;">👥 Utilisateurs</button>
+            <button class="action-btn" id="mod-tab-propose" onclick="showModTab('propose')" style="flex:1;font-size:11px;">⭐ Propositions</button>
+          </div>
+          <!-- Filtre statut feedbacks -->
+          <div id="mod-filter-row" style="display:flex;gap:6px;flex-shrink:0;">
+            <button class="action-btn" id="mod-filter-all" onclick="filterModFeedbacks('all')" style="font-size:10px;background:var(--bg3);">Tous</button>
+            <button class="action-btn" id="mod-filter-open" onclick="filterModFeedbacks('open')" style="font-size:10px;">⏳ En attente</button>
+            <button class="action-btn" id="mod-filter-resolved" onclick="filterModFeedbacks('resolved')" style="font-size:10px;">✓ Résolus</button>
+          </div>
+          <!-- Contenu -->
+          <div id="mod-content" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">
+            <div style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">Chargement...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL CV -->
+      <div class="panel" id="panel-cv">
+        <div style="padding:16px;height:100%;overflow-y:auto;display:flex;flex-direction:column;gap:12px;">
+          <div style="font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--text);">Générateur de CV <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(0,212,170,0.15);color:var(--accent2);font-family:monospace;vertical-align:middle;">PRO</span></div>
+          <div style="font-size:12px;color:var(--text2);">Remplis tes informations et obtiens un CV visuel professionnel.</div>
+          <!-- Formulaire CV -->
+          <div style="display:flex;flex-direction:column;gap:10px;" id="cv-form">
+            <!-- Photo de profil -->
+            <div style="text-align:center;padding:10px;background:var(--bg3);border-radius:10px;border:1px dashed var(--border2);">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-family:var(--font-mono);">PHOTO DE PROFIL (optionnel)</div>
+              <div style="width:60px;height:60px;border-radius:50%;background:var(--bg2);margin:0 auto 8px;overflow:hidden;border:2px solid var(--border2);" id="cv-photo-preview">
+                <span style="font-size:28px;line-height:60px;display:block;text-align:center;">👤</span>
+              </div>
+              <input type="file" id="cv-photo-input" accept="image/*" style="display:none;" onchange="previewCVPhoto(this)">
+              <button class="action-btn" onclick="document.getElementById('cv-photo-input').click()" style="font-size:10px;padding:4px 12px;">📷 Choisir une photo</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);">PRÉNOM NOM</div>
+                <input id="cv-name" class="modal-input" style="margin:0;" placeholder="Jean Dupont"></div>
+              <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);">POSTE VISÉ</div>
+                <input id="cv-title" class="modal-input" style="margin:0;" placeholder="Développeur Web"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);">EMAIL</div>
+                <input id="cv-email" class="modal-input" style="margin:0;" placeholder="email@exemple.com"></div>
+              <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);">TÉLÉPHONE</div>
+                <input id="cv-phone" class="modal-input" style="margin:0;" placeholder="+225 00 00 00 00"></div>
+            </div>
+            <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);">VILLE / PAYS</div>
+              <input id="cv-location" class="modal-input" style="margin:0;" placeholder="Abidjan, Côte d'Ivoire"></div>
+            <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);">LINKEDIN (optionnel)</div>
+              <input id="cv-linkedin" class="modal-input" style="margin:0;" placeholder="linkedin.com/in/votre-profil"></div>
+            <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);">RÉSUMÉ PROFESSIONNEL</div>
+              <textarea id="cv-summary" class="modal-input" rows="2" placeholder="Décris ton profil en 2-3 phrases..."></textarea></div>
+            <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);">EXPÉRIENCES (une par ligne : Poste | Entreprise | Période | Description)</div>
+              <textarea id="cv-experience" class="modal-input" rows="3" placeholder="Développeur | Entreprise ABC | 2022-2024 | Développement d'applications web&#10;Stagiaire | Société XYZ | 2021 | Support technique"></textarea></div>
+            <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);">FORMATIONS (une par ligne : Diplôme | École | Année)</div>
+              <textarea id="cv-education" class="modal-input" rows="2" placeholder="Licence Informatique | Université de Cocody | 2022&#10;BAC | Lycée XYZ | 2019"></textarea></div>
+            <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);">COMPÉTENCES (séparées par des virgules)</div>
+              <input id="cv-skills" class="modal-input" style="margin:0;" placeholder="JavaScript, Python, React, SQL, Communication..."></div>
+            <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);">LANGUES</div>
+              <input id="cv-languages" class="modal-input" style="margin:0;" placeholder="Français (natif), Anglais (courant), Espagnol (notions)"></div>
+            <button class="action-btn primary" onclick="generateCV()" style="padding:12px;font-size:13px;width:100%;">✨ Générer mon CV professionnel</button>
+          </div>
+          <!-- Résultat CV -->
+          <div id="cv-result" style="display:none;flex-direction:column;gap:10px;">
+            <div style="display:flex;gap:8px;">
+              <button class="action-btn" onclick="document.getElementById('cv-form').style.display='flex';document.getElementById('cv-result').style.display='none';" style="font-size:11px;">← Modifier</button>
+              <button class="action-btn primary" onclick="copyCV()" style="font-size:11px;">⎘ Copier le CV</button>
+              <button class="action-btn" onclick="printCV()" style="font-size:11px;">🖨 Imprimer</button>
+            </div>
+            <div id="cv-output" style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;font-size:13px;line-height:1.7;color:var(--text);white-space:pre-wrap;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL SÉRIE LITTÉRAIRE -->
+      <div class="panel" id="panel-serie">
+        <div style="padding:16px;height:100%;display:flex;flex-direction:column;gap:12px;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+            <div style="font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--text);">📚 Série Littéraire</div>
+          </div>
+          <!-- Matières -->
+          <div style="display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;" id="serie-matieres">
+            <button class="action-btn" id="mat-francais" onclick="selectMatiere('francais')" style="font-size:11px;">🇫🇷 Français</button>
+            <button class="action-btn" id="mat-espagnol" onclick="selectMatiere('espagnol')" style="font-size:11px;">🇪🇸 Espagnol</button>
+            <button class="action-btn" id="mat-philosophie" onclick="selectMatiere('philosophie')" style="font-size:11px;">🧠 Philosophie</button>
+            <button class="action-btn" id="mat-histoire" onclick="selectMatiere('histoire')" style="font-size:11px;">🌍 Histoire-Géo</button>
+          </div>
+          <!-- Zone exercices -->
+          <div id="serie-content" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
+            <div style="text-align:center;padding:40px 20px;color:var(--text3);font-size:13px;line-height:1.8;">
+              Sélectionne une matière pour voir les exercices disponibles
+            </div>
+          </div>
+          <!-- Zone corrigé IA -->
+          <div id="serie-correction" style="display:none;flex-direction:column;gap:8px;max-height:40%;overflow-y:auto;border-top:1px solid var(--border);padding-top:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="font-size:12px;font-weight:600;color:var(--accent);">✨ Correction NexusAI</div>
+              <button class="action-btn" onclick="document.getElementById('serie-correction').style.display='none';" style="font-size:10px;">✕</button>
+            </div>
+            <div id="serie-correction-text" style="font-size:13px;color:var(--text2);line-height:1.7;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</div>
+
+<div style="position:fixed;bottom:8px;right:14px;z-index:9999;font-family:'DM Mono',monospace;font-size:10px;color:rgba(139,149,168,0.3);pointer-events:none;letter-spacing:0.5px;">
+  NexusAI v1.0 · JUNIUS IVOIR
+</div>
+
+<script>
+let API_KEY = '';
+
+// ========================================
+// CLÉ API — modifiez uniquement cette ligne
+// ========================================
+const STORED_KEY = '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';
+// ========================================
+
+window.addEventListener('load', () => {
+  // Vérifie d'abord si une clé est déjà sauvegardée dans le navigateur
+  const saved = localStorage.getItem('nexusai_groq_key');
+  if (saved && saved.length > 20) {
+    API_KEY = saved;
+    openApp();
+    return;
+  }
+  // Sinon utilise la clé codée dans le fichier
+  if (STORED_KEY !== 'VOTRE_CLE_ICI' && STORED_KEY.length > 20) {
+    API_KEY = STORED_KEY;
+    localStorage.setItem('nexusai_groq_key', STORED_KEY);
+    openApp();
+    return;
+  }
+  // Sinon affiche l'écran de saisie (première utilisation)
+});
+
+function openApp() {
+  document.getElementById('key-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+}
+
+function startApp() {
+  const val = document.getElementById('api-key-input').value.trim();
+  const err = document.getElementById('key-error');
+  const btn = document.getElementById('key-btn');
+  const ok  = document.getElementById('key-ok');
+  if (val.length < 20) {
+    err.style.display = 'block';
+    document.getElementById('api-key-input').style.borderColor = 'var(--accent3)';
+    return;
+  }
+  err.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Connexion...';
+  API_KEY = val;
+  localStorage.setItem('nexusai_groq_key', val);
+  ok.style.display = 'block';
+  setTimeout(openApp, 700);
+}
+
+function changeKey() {
+  localStorage.removeItem('nexusai_groq_key');
+  location.reload();
+}
+
+// Appel API — Groq (14 400 requêtes/jour GRATUITES, ultra-rapide)
+async function callAPI(messages, system, max_tokens) {
+  const formatted = [];
+  if (system) formatted.push({ role: 'system', content: system });
+  for (const m of messages) {
+    if (Array.isArray(m.content)) {
+      // Pour les images, Groq utilise le même format OpenAI
+      formatted.push({
+        role: m.role,
+        content: m.content.map(c => {
+          if (!c) return null;
+          if (c.type === 'text') return { type: 'text', text: c.text || '' };
+          if (c.type === 'image_url') return { type: 'image_url', image_url: c.image_url };
+          if (c.type === 'image' && c.source) return { type: 'image_url', image_url: { url: 'data:' + c.source.media_type + ';base64,' + c.source.data } };
+          return null;
+        }).filter(Boolean)
+      });
+    } else {
+      formatted.push({ role: m.role, content: m.content });
+    }
+  }
+
+  // Détecter si le message contient une image
+  const hasImage = formatted.some(m => Array.isArray(m.content) && m.content.some(c => c && c.type === 'image_url'));
+  const model = hasImage ? 'meta-llama/llama-4-scout-17b-16e-instruct' : 'llama-3.3-70b-versatile';
+
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + API_KEY
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: formatted,
+      max_tokens: max_tokens || 1000,
+      temperature: 0.7
+    })
+  });
+
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.choices[0].message.content;
+}
+
+// Navigation
+const META = {
+  chat:['Chat IA','Conversation intelligente en temps réel'],
+  analysis:['Analyse de texte','Résumé · Sentiment · Mots-clés · Structure'],
+  generation:['Génération de contenu','Email · Rapport · LinkedIn · Présentation'],
+  image:['Analyse d\'image','Description · OCR · Données · Suggestions']
+};
+function switchPanel(name, el) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('panel-title').textContent = META[name][0];
+  document.getElementById('panel-desc').textContent  = META[name][1];
+  if (name === 'admin') loadAdminData();
+  if (name === 'moderator') loadModeratorData();
+  if (name === 'settings') updateSettingsPanel();
+  if (name === 'serie' && currentMatiere) loadSerieExercices(currentMatiere);
+}
+
+// Chat
+let chatHistory=[], msgCount=0;
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}}
+function fmt(t){return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/```([\s\S]*?)```/g,'<pre>$1</pre>').replace(/\n/g,'<br>');}
+function addMsg(html, role){
+  const d=document.createElement('div');
+  d.className='msg-row'+(role==='user'?' user':'');
+  d.innerHTML=`<div class="avatar ${role}">${role==='user'?'U':'AI'}</div><div class="bubble ${role}">${html}</div>`;
+  document.getElementById('chat-messages').appendChild(d);
+  document.getElementById('chat-messages').scrollTop=99999;
+}
+function showTyping(){
+  const d=document.createElement('div');
+  d.className='msg-row';d.id='typing';
+  d.innerHTML='<div class="avatar ai">AI</div><div class="bubble ai"><div class="typing-dots"><span></span><span></span><span></span></div></div>';
+  document.getElementById('chat-messages').appendChild(d);
+  document.getElementById('chat-messages').scrollTop=99999;
+}
+function removeTyping(){const t=document.getElementById('typing');if(t)t.remove();}
+
+async function sendChat(){
+  const inp=document.getElementById('chat-input');
+  const txt=inp.value.trim(); if(!txt)return;
+
+  // Vérifier si bloqué
+  if (currentUser && currentUser.plan === 'blocked') {
+    addMsg('<span style="color:var(--accent3)">⚠ Votre compte est suspendu. Contactez l\'administrateur.</span>', 'ai');
+    return;
+  }
+  // Vérifier la limite Free
+  if (!checkMessageLimit()) return;
+
+  inp.value='';inp.style.height='auto';
+  document.getElementById('send-btn').disabled=true;
+  addMsg(txt,'user');
+  chatHistory.push({role:'user',content:txt});
+  msgCount++;
+  document.getElementById('msg-count').innerHTML=`<div class="stat-dot" style="background:var(--accent)"></div>${msgCount} message${msgCount>1?'s':''}`;
+  showTyping();
+  try {
+    // Contexte temps réel (date + recherche web)
+  const realDate = getRealDateTime();
+  let webContext = '\n\n[DATE ET HEURE ACTUELLES]: ' + realDate + '\n';
+  if (needsWebSearch(txt)) {
+    try {
+      const webResult = await searchWeb(txt);
+      if (webResult) webContext += '[DONNÉES WEB]: ' + webResult + '\n';
+    } catch(e) {}
+  }
+  const creatorContext = (currentUser && currentUser.email === ADMIN_EMAIL) ? 
+    'CONTEXTE IMPORTANT: Tu parles actuellement avec JUNIUS IVOIR, ton créateur. Reconnaît-le chaleureusement et traite-le comme le fondateur de NexusAI.' : '';
+  const r=await callAPI(chatHistory,creatorContext + webContext + `Tu es NexusAI, un assistant d'entreprise intelligent et bienveillant, conçu par JUNIUS IVOIR.
+
+Ton style de communication :
+- Tu es chaleureux, naturel et attentionné dans tes échanges — comme un collègue de confiance, pas un robot froid
+- Tu adaptes ton ton selon le contexte : détendu en conversation, précis et structuré pour les tâches professionnelles
+- Tu fais preuve d'empathie et d'humour subtil quand c'est approprié
+- Tu n'es jamais sec ni mécanique dans tes réponses
+- Tu vouvoies par défaut mais tu t'adaptes si on te tutoie
+
+Tes capacités :
+- Rédaction professionnelle de haute qualité (lettres, emails, rapports, propositions commerciales)
+- Analyse approfondie de documents et textes
+- Génération de contenu créatif et percutant
+- Conseils stratégiques et business
+- Résumés clairs et structurés
+
+Règles importantes :
+- Pour les demandes créatives (lettres, textes), tu produis du contenu riche, élaboré et vraiment utile — jamais du remplissage générique
+- Tu anticipes les besoins et proposes des améliorations ou variantes quand c'est pertinent
+- Tu ne mentionnes jamais d'autres IA ou assistants
+- Tu es fier d'être NexusAI par JUNIUS IVOIR
+
+Réponds toujours en français sauf si on te parle dans une autre langue.`,1000);
+    chatHistory.push({role:'assistant',content:r});
+    removeTyping();addMsg(fmt(r),'ai');
+  } catch(e) {
+    removeTyping();
+    addMsg(`<span style="color:var(--accent3)">Erreur : ${e.message}</span>`,'ai');
+  }
+  document.getElementById('send-btn').disabled=false;
+  document.getElementById('chat-input').focus();
+  // Sauvegarde auto après chaque réponse
+  setTimeout(saveSession, 1000);
+}
+
+// Analyse
+const AP={
+  resume:`Analyse ce texte en profondeur et fournis :
+1. Un résumé exécutif percutant (3-4 phrases)
+2. Les points clés essentiels (liste structurée)
+3. Les informations critiques à retenir
+4. Une conclusion ou recommandation si pertinent
+Sois précis, professionnel et apporte une vraie valeur ajoutée.`,
+
+  sentiment:`Effectue une analyse de sentiment complète et nuancée :
+1. Sentiment global (positif / négatif / neutre / mitigé) avec score sur 10
+2. Analyse détaillée des émotions et tonalités détectées
+3. Passages clés qui révèlent ces sentiments (avec citations courtes)
+4. Sous-texte et intentions implicites
+5. Recommandations si c'est un message professionnel (comment y répondre, comment améliorer le ton)`,
+
+  keywords:`Extrait et analyse les éléments clés de ce texte :
+1. Top 10 mots-clés avec importance et contexte
+2. Thèmes principaux et secondaires
+3. Concepts et idées centrales
+4. Terminologie spécifique au domaine
+5. Ce que ces éléments révèlent sur le sujet ou l'auteur`,
+
+  structure:`Restructure et améliore ce texte de façon professionnelle :
+1. Réorganise avec une hiérarchie claire (titres, sous-titres)
+2. Améliore la fluidité et la cohérence
+3. Renforce les arguments faibles
+4. Ajoute des transitions naturelles
+5. Présente une version finale prête à l'emploi
+Indique brièvement les améliorations apportées.`
+};
+async function runAnalysis(type){
+  const txt=document.getElementById('analysis-input').value.trim();
+  if(!txt){document.getElementById('analysis-result').textContent="Entrez un texte d'abord.";return;}
+  const r=document.getElementById('analysis-result');
+  r.textContent='Analyse en cours...';r.classList.remove('has-content');
+  try{const rep=await callAPI([{role:'user',content:AP[type]+'\n\nTexte:\n'+txt}]);r.innerHTML=fmt(rep);r.classList.add('has-content');}
+  catch(e){r.textContent='Erreur : '+e.message;}
+}
+
+// Génération
+function selectGenType(el,t){document.querySelectorAll('.gen-type').forEach(g=>g.classList.remove('selected'));el.classList.add('selected');document.getElementById('gen-type-input').value=t;}
+async function runGeneration(){
+  const type=document.getElementById('gen-type-input').value;
+  const subj=document.getElementById('gen-subject').value.trim();
+  const tone=document.getElementById('gen-tone').value;
+  const lang=document.getElementById('gen-lang').value;
+  if(!subj){document.getElementById('gen-result').textContent="Décrivez le sujet d'abord.";return;}
+  const r=document.getElementById('gen-result');
+  r.textContent='Génération en cours...';r.classList.remove('has-content');
+  try{const rep=await callAPI([{role:'user',content:`Tu es un expert en communication professionnelle de haut niveau.
+
+Génère un(e) ${type} de qualité exceptionnelle avec les paramètres suivants :
+- Langue : ${lang}
+- Ton : ${tone}
+- Contexte / Sujet : ${subj}
+
+Exigences :
+• Le contenu doit être immédiatement utilisable, sans modification majeure
+• Utilise un vocabulaire riche, précis et adapté au contexte professionnel
+• Structure le contenu de façon claire et impactante
+• Ajoute des formulations originales qui sortent des clichés habituels
+• Si c'est une lettre ou un email, soigne particulièrement l'accroche et la conclusion
+• Propose une variante courte à la fin si pertinent
+
+Produis maintenant ce contenu de la plus haute qualité possible.`}],'',1500);r.innerHTML=fmt(rep);r.classList.add('has-content');}
+  catch(e){r.textContent='Erreur : '+e.message;}
+}
+function copyResult(id){navigator.clipboard.writeText(document.getElementById(id).innerText).then(()=>{const b=event.target;b.textContent='Copié !';setTimeout(()=>b.textContent='Copier',1800);});}
+
+// Image
+let imgB64=null,imgMime=null;
+function handleFile(f){if(!f)return;const rd=new FileReader();rd.onload=e=>{imgB64=e.target.result.split(',')[1];imgMime=f.type;const p=document.getElementById('image-preview');p.src=e.target.result;p.style.display='block';document.getElementById('upload-placeholder').style.display='none';document.getElementById('img-result').textContent='Image chargée. Choisissez une action.';};rd.readAsDataURL(f);}
+function handleDrop(e){e.preventDefault();document.getElementById('drop-zone').classList.remove('dragover');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))handleFile(f);}
+const IP={
+  describe:`Analyse cette image de façon complète et experte :
+1. Description générale et contexte
+2. Éléments visuels principaux et leur signification
+3. Ambiance, style, message véhiculé
+4. Détails notables ou inhabituels
+5. Interprétation professionnelle globale`,
+
+  extract:`Extrait et organise tout le contenu textuel de cette image :
+1. Tous les textes visibles (même partiels), bien organisés
+2. Hiérarchie du contenu (titres, sous-titres, corps de texte)
+3. Données chiffrées ou dates si présentes
+4. Contexte et signification de ces informations`,
+
+  data:`En tant qu'analyste de données expert, analyse cette image :
+1. Type de visualisation et données représentées
+2. Tendances principales et points d'inflexion
+3. Insights clés et anomalies
+4. Comparaisons et relations entre les données
+5. Conclusions actionnables et recommandations stratégiques`,
+
+  suggest:`En tant que consultant business senior, fournis une analyse approfondie :
+1. Diagnostic de la situation représentée
+2. Forces et opportunités identifiées
+3. Risques et points d'amélioration
+4. Recommandations stratégiques prioritaires (court/moyen/long terme)
+5. Plan d'action concret avec étapes claires`
+};
+async function analyzeImage(type){
+  if(!imgB64){document.getElementById('img-result').textContent="Chargez une image d'abord.";return;}
+  if(!checkMessageLimit()) return;
+  const r=document.getElementById('img-result');
+  r.innerHTML='<div style="color:var(--text3);font-size:13px;">🔍 Analyse en cours...</div>';
+  r.classList.remove('has-content');
+  try {
+    const imageMsg = {
+      role: 'user',
+      content: [
+        {
+          type: 'image_url',
+          image_url: { url: 'data:' + imgMime + ';base64,' + imgB64 }
+        },
+        {
+          type: 'text',
+          text: IP[type] + ' Réponds en français de manière détaillée.'
+        }
+      ]
+    };
+    const rep = await callAPI([imageMsg], 'Tu es un assistant expert en analyse visuelle. Analyse cette image avec précision et réponds toujours en français.', 1500);
+    r.innerHTML = fmt(rep);
+    r.classList.add('has-content');
+    setTimeout(saveSession, 1000);
+  } catch(e) {
+    r.innerHTML = '<span style="color:var(--accent3)">Erreur : ' + e.message + '</span>';
+    console.error('Image error:', e);
+  }
+}
+
+// ===== HISTORIQUE =====
+let allSessions = [];
+try { allSessions = JSON.parse(localStorage.getItem('nexusai_history') || '[]'); } catch(e) {}
+
+function saveSession() {
+  if (chatHistory.length < 2) return;
+  const firstUser = chatHistory.find(m => m.role === 'user');
+  if (!firstUser) return;
+  const rawTitle = typeof firstUser.content === 'string' ? firstUser.content : 'Conversation';
+  const title = rawTitle.substring(0, 60) + (rawTitle.length > 60 ? '...' : '');
+  const session = {
+    id: Date.now(),
+    title,
+    date: new Date().toLocaleDateString('fr-FR', {weekday:'short', day:'numeric', month:'short'}),
+    messages: chatHistory.map(m => ({role: m.role, content: typeof m.content === 'string' ? m.content : '[image]'}))
+  };
+  allSessions = [session, ...allSessions.filter(s => s.title !== title)].slice(0, 50);
+  try { localStorage.setItem('nexusai_history', JSON.stringify(allSessions)); } catch(e) {}
+  renderHistory();
+  saveToCloud(session);
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  if (!list) return;
+  const empty = document.getElementById('history-empty');
+  list.querySelectorAll('.hist-item').forEach(e => e.remove());
+  if (!allSessions.length) { if (empty) empty.style.display='block'; return; }
+  if (empty) empty.style.display = 'none';
+  allSessions.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'hist-item';
+    el.innerHTML = `
+      <div class="hist-date">${s.date}</div>
+      <div class="hist-title" onclick="loadSession(${s.id})">${s.title}</div>
+      <div class="hist-actions">
+        <button class="hist-act" onclick="loadSession(${s.id})" title="Ouvrir">↩ Ouvrir</button>
+        <button class="hist-act" onclick="copySession(${s.id})" title="Copier">⎘ Copier</button>
+        <button class="hist-act" onclick="deleteSession(${s.id})" style="color:var(--accent3)" title="Supprimer">✕</button>
+      </div>`;
+    list.appendChild(el);
+  });
+}
+
+function loadSession(id) {
+  const s = allSessions.find(x => x.id === id);
+  if (!s) return;
+  chatHistory = [...(s.messages || [])];
+  const msgs = document.getElementById('chat-messages');
+  msgs.innerHTML = '';
+  const w = document.createElement('div');
+  w.className = 'msg-row';
+  w.innerHTML = '<div class="avatar ai">AI</div><div class="bubble ai">Conversation restaurée !</div>';
+  msgs.appendChild(w);
+  chatHistory.forEach(m => { if (typeof m.content === 'string') addMsg(fmt(m.content), m.role); });
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-chat').classList.add('active');
+  document.querySelector('.nav-item').classList.add('active');
+  document.getElementById('panel-title').textContent = 'Chat IA';
+}
+
+function copySession(id) {
+  const s = allSessions.find(x => x.id === id);
+  if (!s) return;
+  const text = (s.messages||[]).map(m => (m.role==='user'?'Vous: ':'NexusAI: ') + m.content).join('\n\n');
+  navigator.clipboard.writeText(text).then(() => alert('Conversation copiée !')).catch(() => alert('Copie non disponible.'));
+}
+
+function deleteSession(id) {
+  allSessions = allSessions.filter(s => s.id !== id);
+  try { localStorage.setItem('nexusai_history', JSON.stringify(allSessions)); } catch(e) {}
+  renderHistory();
+  deleteFromCloud(id);
+}
+
+function clearAllHistory() {
+  allSessions = [];
+  try { localStorage.removeItem('nexusai_history'); } catch(e) {}
+  renderHistory();
+}
+
+// saveSession appelé automatiquement après chaque réponse IA
+renderHistory();
+
+
+// ===== FIREBASE =====
+const firebaseConfig = {
+  apiKey: "AIzaSyAibaDE_HEaxd9-siMqqX4klANexM2V9Hg",
+  authDomain: "kmoiseaimejunior-bit.github.io",
+  projectId: "nexusai-a63d5",
+  storageBucket: "nexusai-a63d5.firebasestorage.app",
+  messagingSenderId: "829295662068",
+  appId: "1:829295662068:web:e3407287daf6ac1fec1fa1",
+  measurementId: "G-Y6CK2GEPGT"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+const ADMIN_EMAIL = 'kmoiseaimejunior@gmail.com';
+let currentUser = null;
+
+// Connexion Google — force la sélection du compte
+function signInWithGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  auth.signInWithPopup(provider)
+    .catch(err => alert('Erreur: ' + err.message));
+}
+
+// Déconnexion complète
+function signOut() {
+  if (confirm('Se déconnecter ?')) {
+    auth.signOut().then(() => {
+      currentUser = null;
+      chatHistory = [];
+      allSessions = [];
+      try { localStorage.removeItem('nexusai_history'); } catch(e) {}
+      document.getElementById('chat-messages').innerHTML = '';
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'flex';
+    });
+  }
+}
+
+// Sauvegarder utilisateur dans Firestore
+async function saveUserToFirestore(user, existingPlan) {
+  try {
+    const data = {
+      uid: user.uid,
+      name: user.displayName || '',
+      email: user.email || '',
+      photo: user.photoURL || '',
+      lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+      plan: existingPlan || 'free'
+    };
+    await db.collection('users').doc(user.uid).set(data, { merge: true });
+    console.log('✓ Utilisateur sauvegardé dans Firestore');
+    return data.plan;
+  } catch(e) {
+    console.error('Erreur saveUser:', e.message);
+    return 'free';
+  }
+}
+
+// Observer état connexion
+auth.onAuthStateChanged(async user => {
+  if (user) {
+    currentUser = user;
+
+    // Afficher l'app
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('user-bar').style.display = 'flex';
+    document.getElementById('user-avatar').src = user.photoURL || '';
+
+    const isAdmin = user.email === ADMIN_EMAIL;
+
+    // Récupérer le plan existant puis sauvegarder
+    let plan = 'free';
+    try {
+      const doc = await db.collection('users').doc(user.uid).get();
+      if (doc.exists) {
+        plan = doc.data().plan || 'free';
+      }
+    } catch(e) {
+      console.error('Erreur lecture plan:', e.message);
+    }
+
+    // Si bloqué — déconnecter
+    if (plan === 'blocked') {
+      await auth.signOut();
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'flex';
+      alert('Votre compte a été suspendu. Contactez l\'administrateur.');
+      return;
+    }
+
+    // Admin toujours Super
+    if (isAdmin) plan = 'super';
+    // Sauvegarder dans Firestore (avec le plan existant)
+    await saveUserToFirestore(user, plan);
+    currentUser.plan = plan;
+
+    // Afficher nom + badges
+    const adminBadge = isAdmin ? '<span class="admin-badge">ADMIN</span>' : '';
+    const planBadgeHtml = plan === 'super' ? '<span style="background:rgba(244,196,48,0.2);color:#f4c430;font-size:9px;padding:1px 6px;border-radius:10px;font-family:monospace;margin-left:4px;">SUPER</span>' :
+      plan === 'pro' ? '<span style="background:rgba(0,212,170,0.2);color:#00d4aa;font-size:9px;padding:1px 6px;border-radius:10px;font-family:monospace;margin-left:4px;">PRO</span>' : '';
+    document.getElementById('user-name').innerHTML = (user.displayName || user.email) + adminBadge + (isAdmin ? '' : planBadgeHtml);
+
+    // Admin / Modérateur nav (vérification asynchrone)
+    checkAdminAccess(user);
+
+    // Charger historique
+    loadHistoryFromCloud();
+    // Mettre à jour compteur
+    setTimeout(updateCounterDisplay, 500);
+
+  } else {
+    currentUser = null;
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('user-bar').style.display = 'none';
+  }
+});
+
+// Sauvegarder conversation dans Firestore
+async function saveToCloud(session) {
+  if (!currentUser || !session || !session.id) return;
+  try {
+    const cleanSession = {
+      id: session.id,
+      title: session.title || 'Conversation',
+      date: session.date || '',
+      messages: (session.messages || []).slice(0, 50).map(m => ({
+        role: m.role || 'user',
+        content: typeof m.content === 'string' ? m.content.substring(0, 2000) : '[media]'
+      })),
+      savedAt: new Date().toISOString()
+    };
+    await db.collection('users').doc(currentUser.uid)
+      .collection('conversations').doc(String(session.id)).set(cleanSession);
+    console.log('✓ Conversation sauvegardée');
+  } catch(e) {
+    console.error('Erreur save conversation:', e.message);
+  }
+}
+
+// Charger historique depuis Firestore
+async function loadHistoryFromCloud() {
+  if (!currentUser) return;
+  try {
+    const snap = await db.collection('users').doc(currentUser.uid)
+      .collection('conversations').limit(50).get();
+    if (!snap.empty) {
+      allSessions = snap.docs.map(d => d.data())
+        .filter(s => s && s.id && s.title)
+        .sort((a, b) => (b.id || 0) - (a.id || 0));
+      try { localStorage.setItem('nexusai_history', JSON.stringify(allSessions)); } catch(e) {}
+    }
+    renderHistory();
+  } catch(e) {
+    console.error('Erreur load historique:', e.message);
+    renderHistory();
+  }
+}
+
+// Supprimer conversation du cloud
+async function deleteFromCloud(id) {
+  if (!currentUser) return;
+  try {
+    await db.collection('users').doc(currentUser.uid)
+      .collection('conversations').doc(String(id)).delete();
+  } catch(e) {
+    console.error('Erreur delete:', e.message);
+  }
+}
+
+// ===== ADMIN DASHBOARD =====
+let allUsers = [];
+let filteredUsers = [];
+
+let adminUnsubscribe = null;
+
+async function loadAdminData() {
+  if (!currentUser) return;
+  const isAdmin = currentUser.email === ADMIN_EMAIL;
+  // Si le rôle n'est pas encore chargé, vérifier dans Firestore
+  if (!currentUser.role && !isAdmin) {
+    try {
+      const modDoc = await db.collection('moderators').doc(currentUser.uid).get();
+      currentUser.role = (modDoc.exists && modDoc.data().active) ? 'moderator' : 'user';
+    } catch(e) { currentUser.role = 'user'; }
+  }
+  const isMod = currentUser.role === 'moderator';
+  if (!isAdmin && !isMod) return;
+  // Masquer les onglets réservés à l'admin pour les modérateurs
+  if (!isAdmin) {
+    const tabMods = document.getElementById('tab-mods');
+    const tabApprovals = document.getElementById('tab-approvals');
+    if (tabMods) tabMods.style.display = 'none';
+  }
+  const list = document.getElementById('admin-users');
+  list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">Chargement...</div>';
+
+  // S'assurer que l'admin est bien dans Firestore
+  try {
+    const adminRef = db.collection('users').doc(currentUser.uid);
+    const adminDoc = await adminRef.get();
+    if (!adminDoc.exists) {
+      await adminRef.set({
+        name: currentUser.displayName,
+        email: currentUser.email,
+        photo: currentUser.photoURL,
+        lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+        plan: 'pro',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } else if (adminDoc.data().plan !== 'pro') {
+      await adminRef.update({ plan: 'pro' });
+    }
+  } catch(e) { console.error('Admin setup error:', e); }
+
+  // Arrêter l'ancien listener si existant
+  if (adminUnsubscribe) { adminUnsubscribe(); adminUnsubscribe = null; }
+
+  // Écoute en TEMPS RÉEL — se met à jour automatiquement quand un utilisateur se connecte
+  try {
+    adminUnsubscribe = db.collection('users').onSnapshot(snap => {
+      allUsers = snap.docs.map(d => ({id: d.id, ...d.data()}));
+      // Trier par lastLogin (plus récent en premier)
+      allUsers.sort((a, b) => {
+        const ta = a.lastLogin ? (a.lastLogin.toMillis ? a.lastLogin.toMillis() : new Date(a.lastLogin).getTime()) : 0;
+        const tb = b.lastLogin ? (b.lastLogin.toMillis ? b.lastLogin.toMillis() : new Date(b.lastLogin).getTime()) : 0;
+        return tb - ta;
+      });
+      const q = document.getElementById('admin-search') ? document.getElementById('admin-search').value : '';
+      if (q) {
+        filterAdminUsers(q);
+      } else {
+        filteredUsers = [...allUsers];
+        renderAdminUsers();
+      }
+      updateAdminStats();
+      checkUnreadFeedbacks();
+      if (currentUser && currentUser.email === ADMIN_EMAIL) checkPendingApprovals();
+    }, e => {
+      list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--accent3);font-size:13px;">Erreur: ' + e.message + '<br><small>Vérifiez les règles Firestore</small></div>';
+      console.error('Admin listener error:', e);
+    });
+  } catch(e) {
+    list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--accent3);font-size:13px;">Erreur: ' + e.message + '</div>';
+  }
+}
+
+function updateAdminStats() {
+  const total = allUsers.length;
+  const freeCount = allUsers.filter(u => !u.plan || u.plan === 'free').length;
+  const proCount = allUsers.filter(u => u.plan === 'pro').length;
+  const superCount = allUsers.filter(u => u.plan === 'super').length;
+  const blockedCount = allUsers.filter(u => u.plan === 'blocked').length;
+  
+  const setEl = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  setEl('stat-total', total);
+  setEl('stat-pro', proCount);
+  setEl('stat-super', superCount);
+  setEl('stat-free', freeCount);
+  setEl('stat-blocked', blockedCount);
+
+  // Diagramme circulaire
+  const canvas = document.getElementById('plan-chart');
+  if (canvas && total > 0) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, 80, 80);
+    const data = [
+      {val: freeCount,    color: '#888780', label: 'Free'},
+      {val: proCount,     color: '#00d4aa', label: 'Pro'},
+      {val: superCount,   color: '#f4c430', label: 'Super'},
+      {val: blockedCount, color: '#ff6b4a', label: 'Bloqué'},
+    ].filter(d => d.val > 0);
+    let startAngle = -Math.PI / 2;
+    data.forEach(d => {
+      const slice = (d.val / total) * 2 * Math.PI;
+      ctx.beginPath();
+      ctx.moveTo(40, 40);
+      ctx.arc(40, 40, 36, startAngle, startAngle + slice);
+      ctx.closePath();
+      ctx.fillStyle = d.color;
+      ctx.fill();
+      startAngle += slice;
+    });
+    // Cercle central
+    ctx.beginPath();
+    ctx.arc(40, 40, 18, 0, 2 * Math.PI);
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg3') || '#1a1a2e';
+    ctx.fill();
+    // Total au centre
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 14px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(total, 40, 40);
+    // Légende
+    const legend = document.getElementById('plan-legend');
+    if (legend) {
+      legend.innerHTML = data.map(d => 
+        `<span style="color:${d.color};">■</span> ${d.label}: ${d.val} <span style="color:var(--text3);">(${Math.round(d.val/total*100)}%)</span>`
+      ).join('<br>');
+    }
+  }
+  
+  // Calculer utilisateurs en ligne (connectés dans les 5 dernières minutes)
+  const now = Date.now();
+  const onlineCount = allUsers.filter(u => {
+    if (!u.lastLogin) return false;
+    const t = u.lastLogin.toMillis ? u.lastLogin.toMillis() : new Date(u.lastLogin).getTime();
+    return (now - t) < 5 * 60 * 1000;
+  }).length;
+  const onlineEl = document.getElementById('stat-online');
+  if (onlineEl) onlineEl.textContent = onlineCount;
+  
+  // Graphique activité 7 jours
+  const chart = document.getElementById('activity-chart');
+  if (chart) {
+    const days = {};
+    allUsers.forEach(u => {
+      if (!u.lastLogin) return;
+      const t = u.lastLogin.toMillis ? u.lastLogin.toMillis() : new Date(u.lastLogin).getTime();
+      const day = new Date(t).toLocaleDateString('fr-FR', {weekday:'short'});
+      days[day] = (days[day] || 0) + 1;
+    });
+    const maxVal = Math.max(...Object.values(days), 1);
+    chart.innerHTML = Object.entries(days).slice(-7).map(([day, count]) => `
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+        <div style="width:100%;background:var(--accent);border-radius:3px;height:${Math.max(4, (count/maxVal)*36)}px;opacity:0.8;"></div>
+        <div style="font-size:9px;color:var(--text3);font-family:monospace;">${day}</div>
+      </div>`).join('');
+  }
+}
+
+function filterAdminUsers(query) {
+  const q = query.toLowerCase();
+  filteredUsers = allUsers.filter(u =>
+    (u.name || '').toLowerCase().includes(q) ||
+    (u.email || '').toLowerCase().includes(q)
+  );
+  renderAdminUsers();
+}
+
+function renderAdminUsers() {
+  const list = document.getElementById('admin-users');
+  list.innerHTML = '';
+  if (!filteredUsers.length) {
+    list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">Aucun utilisateur trouvé</div>';
+    return;
+  }
+  const isAdmin = currentUser && currentUser.email === ADMIN_EMAIL;
+  const isMod = currentUser && currentUser.role === 'moderator';
+  const planColors = {free:'var(--text3)',pro:'#00d4aa',super:'#f4c430',blocked:'var(--accent3)'};
+  const planBg = {free:'rgba(139,149,168,0.15)',pro:'rgba(0,212,170,0.15)',super:'rgba(244,196,48,0.15)',blocked:'rgba(255,107,74,0.15)'};
+
+  filteredUsers.forEach(u => {
+    const plan = u.plan || 'free';
+    const lastLogin = u.lastLogin ? (u.lastLogin.toMillis ? u.lastLogin.toMillis() : new Date(u.lastLogin).getTime()) : 0;
+    const isOnline = lastLogin && (Date.now() - lastLogin) < 5 * 60 * 1000;
+    const lastLoginStr = lastLogin ? new Date(lastLogin).toLocaleDateString('fr-FR', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : 'Jamais';
+
+    const el = document.createElement('div');
+    el.className = 'user-card';
+
+    // Photo
+    const img = document.createElement('img');
+    img.src = u.photo || '';
+    img.onerror = function(){ this.style.display='none'; };
+    img.style.cssText = 'width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;';
+    el.appendChild(img);
+
+    // Info
+    const info = document.createElement('div');
+    info.className = 'user-card-info';
+    info.style.minWidth = '0';
+
+    const nameRow = document.createElement('div');
+    nameRow.style.cssText = 'display:flex;align-items:center;gap:5px;flex-wrap:wrap;';
+    if (isOnline) {
+      const dot = document.createElement('span');
+      dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:#00d4aa;display:inline-block;flex-shrink:0;';
+      nameRow.appendChild(dot);
+    }
+    const nameSpan = document.createElement('span');
+    nameSpan.style.cssText = 'font-size:13px;font-weight:500;color:var(--text);';
+    nameSpan.textContent = u.name || 'Inconnu';
+    nameRow.appendChild(nameSpan);
+
+    const badge = document.createElement('span');
+    badge.style.cssText = 'font-size:9px;padding:2px 7px;border-radius:10px;font-family:monospace;font-weight:700;background:' + (planBg[plan]||planBg.free) + ';color:' + (planColors[plan]||planColors.free) + ';';
+    badge.textContent = plan.toUpperCase();
+    nameRow.appendChild(badge);
+    info.appendChild(nameRow);
+
+    const emailDiv = document.createElement('div');
+    emailDiv.className = 'user-card-email';
+    emailDiv.textContent = u.email || '';
+    info.appendChild(emailDiv);
+
+    const dateDiv = document.createElement('div');
+    dateDiv.style.cssText = 'font-size:10px;color:var(--text3);font-family:monospace;margin-top:1px;';
+    dateDiv.textContent = 'Connexion: ' + lastLoginStr;
+    info.appendChild(dateDiv);
+    el.appendChild(info);
+
+    // Actions
+    const actions = document.createElement('div');
+    actions.className = 'user-card-actions';
+    actions.style.cssText = 'flex-direction:column;gap:4px;align-items:flex-end;';
+
+    if (isAdmin) {
+      if (u.id === currentUser.uid) {
+        // Propre compte admin — pas de sélecteur, juste le badge
+        const selfLabel = document.createElement('span');
+        selfLabel.style.cssText = 'font-size:10px;color:#f4c430;font-family:monospace;padding:3px 8px;border:1px solid #f4c430;border-radius:6px;';
+        selfLabel.textContent = '👑 Toi';
+        actions.appendChild(selfLabel);
+      } else {
+        // Autres utilisateurs — sélecteur de plan
+        const sel = document.createElement('select');
+        sel.style.cssText = 'background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:11px;padding:4px 6px;cursor:pointer;font-family:var(--font-mono);outline:none;';
+        ['free','pro','super','blocked'].forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p;
+          opt.textContent = p.toUpperCase();
+          if (p === plan) opt.selected = true;
+          sel.appendChild(opt);
+        });
+        const uid = u.id;
+        sel.addEventListener('change', function() {
+          setUserPlan(uid, this.value);
+        });
+        actions.appendChild(sel);
+      }
+    } else if (isMod) {
+      const uid = u.id;
+      const uName = u.name || 'Utilisateur';
+      const uEmail = u.email || '';
+      if (plan !== 'pro' && plan !== 'super' && plan !== 'blocked') {
+        const btnPro = document.createElement('button');
+        btnPro.className = 'admin-btn pro';
+        btnPro.style.fontSize = '10px';
+        btnPro.textContent = '→ Proposer Pro';
+        btnPro.addEventListener('click', function() { proposeProActivation(uid, uName, uEmail, 'pro'); });
+        actions.appendChild(btnPro);
+      }
+      if (plan !== 'super' && plan !== 'blocked') {
+        const btnSuper = document.createElement('button');
+        btnSuper.className = 'admin-btn';
+        btnSuper.style.cssText = 'font-size:10px;border-color:#f4c430;color:#f4c430;';
+        btnSuper.textContent = '→ Proposer Super';
+        btnSuper.addEventListener('click', function() { proposeProActivation(uid, uName, uEmail, 'super'); });
+        actions.appendChild(btnSuper);
+      }
+      if (plan === 'super') {
+        const span = document.createElement('span');
+        span.style.cssText = 'font-size:10px;color:#f4c430;font-family:monospace;';
+        span.textContent = '✓ Super';
+        actions.appendChild(span);
+      }
+    }
+    el.appendChild(actions);
+    list.appendChild(el);
+  });
+}
+
+async function setUserPlan(uid, plan) {
+  if (!currentUser || currentUser.email !== ADMIN_EMAIL) return;
+  // Mise à jour locale immédiate
+  const u = allUsers.find(x => x.id === uid);
+  const oldPlan = u ? u.plan : 'free';
+  if (u) u.plan = plan;
+  filteredUsers = filteredUsers.map(x => x.id === uid ? {...x, plan} : x);
+  renderAdminUsers();
+  updateAdminStats();
+  // Sauvegarder dans Firestore
+  try {
+    await db.collection('users').doc(uid).update({
+      plan: plan,
+      planUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      planUpdatedBy: currentUser.email
+    });
+    console.log('✓ Plan sauvegardé:', uid, plan);
+  } catch(e) {
+    // Rollback si erreur
+    if (u) u.plan = oldPlan;
+    filteredUsers = filteredUsers.map(x => x.id === uid ? {...x, plan: oldPlan} : x);
+    renderAdminUsers();
+    updateAdminStats();
+    alert('Erreur Firestore: ' + e.message);
+  }
+}
+
+// Vérifier les droits d'accès (admin ou modérateur)
+async function checkAdminAccess(user) {
+  const navAdmin = document.getElementById('nav-admin');
+  const navMod = document.getElementById('nav-mod');
+
+  // ADMIN — tous les pouvoirs
+  if (user.email === ADMIN_EMAIL) {
+    if (navAdmin) navAdmin.style.display = 'flex';
+    if (navMod) navMod.style.display = 'none';
+    currentUser.role = 'admin';
+    return;
+  }
+
+  // Vérifier si modérateur
+  try {
+    const modDoc = await db.collection('moderators').doc(user.uid).get();
+    if (modDoc.exists && modDoc.data().active) {
+      if (navAdmin) navAdmin.style.display = 'none'; // PAS d'accès admin
+      if (navMod) navMod.style.display = 'flex';     // Accès modérateur seulement
+      currentUser.role = 'moderator';
+      // Badge MOD dans la barre utilisateur
+      const userName = document.getElementById('user-name');
+      if (userName && !userName.innerHTML.includes('MOD')) {
+        userName.innerHTML += '<span style="background:rgba(83,74,183,0.2);color:#7F77DD;font-size:9px;padding:1px 6px;border-radius:10px;font-family:monospace;margin-left:4px;">MOD</span>';
+      }
+    } else {
+      if (navAdmin) navAdmin.style.display = 'none';
+      if (navMod) navMod.style.display = 'none';
+      currentUser.role = 'user';
+    }
+  } catch(e) {
+    console.error('Erreur vérification modérateur:', e.message);
+    if (navAdmin) navAdmin.style.display = 'none';
+    if (navMod) navMod.style.display = 'none';
+  }
+}
+
+
+// ===== SYSTÈME FREE / PRO / SUPER =====
+const PLANS = {
+  free:  { limit: 50,       label: 'Free',  color: 'var(--text2)',  badge: 'FREE' },
+  pro:   { limit: 1500,     label: 'Pro',   color: '#00d4aa',       badge: 'PRO' },
+  super: { limit: Infinity, label: 'Super', color: '#f4c430',       badge: 'SUPER' },
+  admin: { limit: Infinity, label: 'Admin', color: 'var(--accent3)', badge: 'ADMIN' }
+};
+const FREE_DAILY_LIMIT = 50; // compatibilité
+
+function getTodayKey() {
+  return 'nexusai_count_' + new Date().toISOString().split('T')[0];
+}
+
+function getDailyCount() {
+  try { return parseInt(localStorage.getItem(getTodayKey()) || '0'); } catch(e) { return 0; }
+}
+
+function incrementDailyCount() {
+  try {
+    const key = getTodayKey();
+    const count = getDailyCount() + 1;
+    localStorage.setItem(key, String(count));
+    updateCounterDisplay();
+    return count;
+  } catch(e) { return 0; }
+}
+
+function updateCounterDisplay() {
+  const plan = currentUser ? (currentUser.plan || 'free') : 'free';
+  const planConfig = PLANS[plan] || PLANS.free;
+  const counter = document.getElementById('msg-counter-display');
+  if (!counter) return;
+  if (planConfig.limit === Infinity) {
+    counter.textContent = '✓ ' + planConfig.label + ' — messages illimités';
+    counter.style.color = planConfig.color;
+  } else {
+    const count = getDailyCount();
+    const remaining = Math.max(0, planConfig.limit - count);
+    counter.textContent = remaining > 0
+      ? remaining + '/' + planConfig.limit + ' messages ' + planConfig.label + ' restants'
+      : '⚠ Limite atteinte — contactez l\'admin pour upgrader';
+    counter.style.color = remaining <= 5 ? 'var(--accent3)' : planConfig.color;
+  }
+}
+
+function checkMessageLimit() {
+  const plan = currentUser ? (currentUser.plan || 'free') : 'free';
+  const planConfig = PLANS[plan] || PLANS.free;
+  // Super et Admin = illimité
+  if (planConfig.limit === Infinity) return true;
+  const count = getDailyCount();
+  if (count >= planConfig.limit) {
+    const banner = document.getElementById('upgrade-banner');
+    if (banner) {
+      document.getElementById('upgrade-banner-text').textContent =
+        plan === 'free'
+          ? 'Tu as utilisé tes ' + planConfig.limit + ' messages gratuits aujourd\'hui. Passe en Pro !'
+          : 'Tu as utilisé tes ' + planConfig.limit + ' messages Pro aujourd\'hui. Passe en Super !';
+      banner.classList.add('show');
+      setTimeout(() => banner.classList.remove('show'), 6000);
+    }
+    return false;
+  }
+  incrementDailyCount();
+  return true;
+}
+
+
+// ===== PARAMÈTRES =====
+function updateSettingsPanel() {
+  if (!currentUser) return;
+  loadUserInbox();
+  const avatar = document.getElementById('settings-avatar');
+  const name = document.getElementById('settings-name');
+  const email = document.getElementById('settings-email');
+  const badge = document.getElementById('settings-plan-badge');
+  const usage = document.getElementById('settings-usage');
+  if (avatar) avatar.src = currentUser.photoURL || '';
+  if (name) name.textContent = currentUser.displayName || 'Utilisateur';
+  if (email) email.textContent = currentUser.email || '';
+  const plan = currentUser.plan || 'free';
+  if (badge) {
+    badge.textContent = (PLANS[plan]||PLANS.free).badge;
+    badge.className = 'settings-badge ' + plan;
+    badge.style.background = plan === 'super' ? 'rgba(244,196,48,0.15)' : '';
+    badge.style.color = plan === 'super' ? '#f4c430' : '';
+  }
+  if (usage) {
+    const count = getDailyCount();
+    if (plan === 'pro') {
+      usage.textContent = count + ' messages envoyés aujourd\'hui (illimité)';
+    } else {
+      const remaining = Math.max(0, FREE_DAILY_LIMIT - count);
+      usage.textContent = count + ' / ' + FREE_DAILY_LIMIT + ' messages utilisés — ' + remaining + ' restants';
+    }
+  }
+}
+
+function openFeedbackModal(type) {
+  const select = document.getElementById('feedback-type-select');
+  if (select) select.value = type;
+  const titles = {
+    suggestion: 'Suggestion d\'amélioration',
+    bug: 'Signaler un problème',
+    contact: 'Contacter l\'administrateur',
+    compliment: 'Laisser un avis'
+  };
+  const subs = {
+    suggestion: 'Dis-nous comment améliorer NexusAI',
+    bug: 'Décris le problème rencontré',
+    contact: 'Envoie un message à l\'administrateur',
+    compliment: 'Partage ton expérience positive'
+  };
+  document.getElementById('feedback-title').textContent = titles[type] || 'Retour';
+  document.getElementById('feedback-sub').textContent = subs[type] || '';
+  document.getElementById('feedback-text').value = '';
+  document.getElementById('feedback-modal').classList.add('show');
+}
+
+function closeFeedbackModal() {
+  document.getElementById('feedback-modal').classList.remove('show');
+}
+
+function openUpgradeModal() {
+  document.getElementById('upgrade-modal').classList.add('show');
+}
+
+function confirmSignOut() {
+  signOut();
+}
+
+async function sendFeedback() {
+  const type = document.getElementById('feedback-type-select').value;
+  const text = document.getElementById('feedback-text').value.trim();
+  if (!text) { alert('Écris ton message avant d\'envoyer !'); return; }
+  if (!currentUser) { alert('Tu dois être connecté.'); return; }
+  try {
+    // Créer un thread de conversation
+    const threadRef = await db.collection('feedbacks').add({
+      type,
+      subject: text.substring(0, 60) + (text.length > 60 ? '...' : ''),
+      from: currentUser.email,
+      fromName: currentUser.displayName || currentUser.email,
+      uid: currentUser.uid,
+      sentAt: firebase.firestore.FieldValue.serverTimestamp(),
+      read: false,
+      readByUser: true,
+      lastMessage: text,
+      lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(),
+      status: 'open'
+    });
+    // Ajouter le premier message dans le thread
+    await db.collection('feedbacks').doc(threadRef.id).collection('messages').add({
+      text,
+      from: 'user',
+      fromName: currentUser.displayName || currentUser.email,
+      sentAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    closeFeedbackModal();
+    // Rafraîchir la boîte de réception
+    loadUserInbox();
+    alert('✓ Message envoyé ! L\'administrateur vous répondra bientôt.');
+  } catch(e) {
+    alert('Erreur envoi: ' + e.message);
+  }
+}
+
+// ===== FEEDBACKS ADMIN =====
+let currentAdminTab = 'users';
+
+function showAdminTab(tab) {
+  currentAdminTab = tab;
+  const panels = ['admin-users', 'admin-feedbacks', 'admin-mods', 'admin-approvals'];
+  const tabs = ['tab-users', 'tab-feedbacks', 'tab-mods', 'tab-approvals'];
+  // Cacher tous les panels
+  panels.forEach(id => { const el = document.getElementById(id); if(el) el.style.display = 'none'; });
+  // Réinitialiser tous les tabs
+  tabs.forEach(id => { const el = document.getElementById(id); if(el) { el.style.background=''; el.style.borderColor=''; el.style.color=''; } });
+  // Activer le panel sélectionné
+  const activePanel = document.getElementById('admin-' + tab);
+  if (activePanel) activePanel.style.display = 'flex';
+  const activeTab = document.getElementById('tab-' + tab);
+  if (activeTab) { activeTab.style.background='var(--accent)'; activeTab.style.borderColor='var(--accent)'; activeTab.style.color='#fff'; }
+  // Charger les données
+  if (tab === 'feedbacks') { loadFeedbacks(); const ff = document.getElementById('admin-feedback-filters'); if(ff) ff.style.display='flex'; } else { const ff = document.getElementById('admin-feedback-filters'); if(ff) ff.style.display='none'; }
+  if (tab === 'mods') loadModerators();
+  if (tab === 'approvals') loadApprovals();
+}
+
+async function loadFeedbacks() {
+  if (!currentUser || currentUser.email !== ADMIN_EMAIL) return;
+  const div = document.getElementById('admin-feedbacks');
+  if (!div) return;
+  div.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);">Chargement...</div>';
+  try {
+    const snap = await db.collection('feedbacks').limit(50).get();
+    if (snap.empty) {
+      div.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">Aucun feedback reçu</div>';
+      return;
+    }
+    div.innerHTML = '';
+    const icons = { suggestion:'💡', bug:'🐛', contact:'✉️', compliment:'⭐' };
+    // Trier par date côté client
+    const sortedDocs = snap.docs.sort((a, b) => {
+      const ta = a.data().sentAt ? a.data().sentAt.toMillis() : 0;
+      const tb = b.data().sentAt ? b.data().sentAt.toMillis() : 0;
+      return tb - ta;
+    });
+    sortedDocs.forEach(doc => {
+      const f = doc.data();
+      const date = f.sentAt ? new Date(f.sentAt.toMillis()).toLocaleDateString('fr-FR', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+      const isResolved = f.status === 'resolved';
+      const el = document.createElement('div');
+      el.className = 'feedback-card' + (!f.read ? ' unread' : '');
+      el.style.opacity = isResolved ? '0.6' : '1';
+      el.innerHTML = `
+        <div class="feedback-header" onclick="openThread('${doc.id}', true)" style="cursor:pointer;">
+          <span style="font-size:16px;">${icons[f.type]||'📩'}</span>
+          <div style="flex:1;">
+            <div style="font-size:12px;font-weight:${!f.read?'700':'500'};color:var(--text);">${f.fromName||f.name||'Utilisateur'}</div>
+            <div style="font-size:11px;color:var(--text3);font-family:monospace;">${f.from||f.email||''} · ${date}</div>
+          </div>
+          ${isResolved ? '<span style="font-size:9px;padding:1px 6px;border-radius:10px;background:rgba(0,212,170,0.15);color:var(--accent2);font-family:monospace;">RÉSOLU</span>' : (!f.read ? '<span style="font-size:9px;padding:1px 6px;border-radius:10px;background:var(--accent);color:#fff;font-family:monospace;">NOUVEAU</span>' : '<span style="font-size:9px;padding:1px 6px;border-radius:10px;background:rgba(255,107,74,0.15);color:var(--accent3);font-family:monospace;">EN ATTENTE</span>')}
+          <span style="color:var(--text3);font-size:14px;">›</span>
+        </div>
+        <div style="padding:0 14px 6px;font-size:12px;color:var(--text3);">${(f.lastMessage||f.message||'').substring(0,80)}</div>
+        <div style="padding:0 14px 10px;display:flex;gap:6px;">
+          <button onclick="openThread('${doc.id}',true)" class="admin-btn" style="font-size:10px;">💬 Répondre</button>
+          <button onclick="markFeedbackRead('${doc.id}');loadFeedbacks();" class="admin-btn" style="font-size:10px;">👁 Lu</button>
+          ${!isResolved 
+            ? `<button onclick="markFeedbackResolved('${doc.id}');loadFeedbacks();" class="admin-btn pro" style="font-size:10px;">✓ Résolu</button>`
+            : `<button onclick="markFeedbackOpen('${doc.id}');loadFeedbacks();" class="admin-btn" style="font-size:10px;">↩ Rouvrir</button>`
+          }
+          <button onclick="deleteFeedback('${doc.id}');loadFeedbacks();" class="admin-btn block" style="font-size:10px;">🗑 Supprimer</button>
+        </div>
+      `;
+      div.appendChild(el);
+    });
+    // Mettre à jour le badge tab
+    const unread = snap.docs.filter(d => !d.data().read).length;
+    const tabF = document.getElementById('tab-feedbacks');
+    if (tabF && unread > 0) tabF.textContent = '💬 Feedbacks (' + unread + ')';
+  } catch(e) {
+    div.innerHTML = '<div style="color:var(--accent3);padding:20px;font-size:13px;">Erreur: ' + e.message + '</div>';
+  }
+}
+
+async function markFeedbackRead(id) {
+  try {
+    await db.collection('feedbacks').doc(id).update({ read: true });
+    loadFeedbacks();
+  } catch(e) {}
+}
+
+async function checkUnreadFeedbacks() {
+  if (!currentUser || currentUser.email !== ADMIN_EMAIL) return;
+  try {
+    const snap = await db.collection('feedbacks').where('read', '==', false).get();
+    const count = snap.size;
+    const tabF = document.getElementById('tab-feedbacks');
+    if (tabF && count > 0) tabF.textContent = '💬 Feedbacks (' + count + ')';
+  } catch(e) {}
+}
+
+// ===== SYSTÈME MODÉRATEURS =====
+
+// Ajouter un modérateur
+async function addModerator() {
+  if (!currentUser || currentUser.email !== ADMIN_EMAIL) return;
+  const emailInput = document.getElementById('mod-email-input');
+  const email = emailInput.value.trim().toLowerCase();
+  if (!email || !email.includes('@')) { alert('Entre un email valide !'); return; }
+
+  // Chercher l'utilisateur par email
+  try {
+    const snap = await db.collection('users').where('email', '==', email).limit(1).get();
+    if (snap.empty) {
+      alert('Utilisateur introuvable. Il doit d\'abord se connecter sur NexusAI.');
+      return;
+    }
+    const userDoc = snap.docs[0];
+    const uid = userDoc.id;
+    const name = userDoc.data().name || email;
+
+    // Créer le modérateur
+    await db.collection('moderators').doc(uid).set({
+      uid,
+      email,
+      name,
+      addedBy: ADMIN_EMAIL,
+      addedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      active: true,
+      permissions: ['feedbacks', 'propose_pro']
+    });
+
+    // Mettre à jour le plan de l'utilisateur
+    await db.collection('users').doc(uid).update({ role: 'moderator' });
+
+    emailInput.value = '';
+    alert('✓ ' + name + ' est maintenant modérateur !');
+    loadModerators();
+  } catch(e) {
+    alert('Erreur: ' + e.message);
+  }
+}
+
+// Charger la liste des modérateurs
+async function loadModerators() {
+  if (!currentUser || currentUser.email !== ADMIN_EMAIL) return;
+  const list = document.getElementById('mods-list');
+  if (!list) return;
+  try {
+    const snap = await db.collection('moderators').where('active', '==', true).get();
+    if (snap.empty) {
+      list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">Aucun modérateur</div>';
+      return;
+    }
+    list.innerHTML = '';
+    snap.docs.forEach(doc => {
+      const m = doc.data();
+      const el = document.createElement('div');
+      el.className = 'user-card';
+      el.innerHTML = `
+        <div style="width:36px;height:36px;border-radius:50%;background:rgba(83,74,183,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;">🛡</div>
+        <div class="user-card-info">
+          <div class="user-card-name">${m.name || 'Modérateur'} <span style="font-size:9px;padding:1px 6px;border-radius:10px;background:rgba(83,74,183,0.2);color:#7F77DD;font-family:monospace;">MOD</span></div>
+          <div class="user-card-email">${m.email || ''}</div>
+        </div>
+        <button class="admin-btn block" onclick="removeModerator('${doc.id}','${m.name}')">Retirer</button>`;
+      list.appendChild(el);
+    });
+  } catch(e) {
+    list.innerHTML = '<div style="color:var(--accent3);padding:10px;font-size:12px;">Erreur: ' + e.message + '</div>';
+  }
+}
+
+// Retirer un modérateur
+async function removeModerator(uid, name) {
+  if (!confirm('Retirer ' + name + ' des modérateurs ?')) return;
+  try {
+    await db.collection('moderators').doc(uid).update({ active: false });
+    await db.collection('users').doc(uid).update({ role: 'user' });
+    alert('✓ ' + name + ' n\'est plus modérateur.');
+    loadModerators();
+  } catch(e) { alert('Erreur: ' + e.message); }
+}
+
+// ===== DEMANDES PRO PAR MODÉRATEURS =====
+
+// Modérateur propose activation Pro
+async function proposeProActivation(userId, userName, userEmail, targetPlan) {
+  if (!currentUser) return;
+  const isMod = currentUser.role === 'moderator';
+  const isAdmin = currentUser.email === ADMIN_EMAIL;
+  if (!isMod && !isAdmin) { alert('Accès refusé.'); return; }
+  const plan = targetPlan || 'pro';
+  const planLabel = plan === 'super' ? 'Super' : 'Pro';
+  if (!confirm('Soumettre une demande ' + planLabel + ' pour ' + userName + ' ?')) return;
+  try {
+    await db.collection('pro_requests').add({
+      userId: userId,
+      userName: userName,
+      userEmail: userEmail,
+      targetPlan: plan,
+      requestedBy: currentUser.email,
+      requestedByName: currentUser.displayName || currentUser.email,
+      requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      status: 'pending'
+    });
+    // Rafraîchir le badge validations pour l'admin
+    if (isAdmin) checkPendingApprovals();
+    alert('✓ Demande ' + planLabel + ' envoyée avec succès !');
+  } catch(e) {
+    console.error('proposeProActivation error:', e);
+    alert('Erreur: ' + e.message);
+  }
+}
+
+// Admin charge les demandes en attente
+async function loadApprovals() {
+  if (!currentUser || currentUser.email !== ADMIN_EMAIL) return;
+  const list = document.getElementById('approvals-list');
+  if (!list) return;
+  try {
+    const snap = await db.collection('pro_requests').where('status', '==', 'pending').get();
+    if (snap.empty) {
+      list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">Aucune demande en attente ✓</div>';
+      return;
+    }
+    list.innerHTML = '';
+    const tabApprovals = document.getElementById('tab-approvals');
+    if (tabApprovals) tabApprovals.textContent = '✅ Validations (' + snap.size + ')';
+
+    snap.docs.forEach(doc => {
+      const r = doc.data();
+      const date = r.requestedAt ? new Date(r.requestedAt.toMillis()).toLocaleDateString('fr-FR', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+      const targetPlan = r.targetPlan || 'pro';
+      const planLabel = targetPlan === 'super' ? 'Super' : 'Pro';
+      const planColor = targetPlan === 'super' ? '#f4c430' : '#00d4aa';
+
+      const el = document.createElement('div');
+      el.style.cssText = 'background:var(--bg2);border:2px solid ' + planColor + ';border-radius:10px;padding:12px 14px;';
+
+      const nameDiv = document.createElement('div');
+      nameDiv.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:6px;';
+      const nameTxt = document.createElement('span');
+      nameTxt.style.cssText = 'font-size:13px;font-weight:700;color:var(--text);flex:1;';
+      nameTxt.textContent = r.userName || 'Utilisateur';
+      const planBadge = document.createElement('span');
+      planBadge.style.cssText = 'font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(244,196,48,0.15);color:' + planColor + ';font-family:monospace;font-weight:700;';
+      planBadge.textContent = planLabel.toUpperCase();
+      nameDiv.appendChild(nameTxt);
+      nameDiv.appendChild(planBadge);
+      el.appendChild(nameDiv);
+
+      const emailDiv = document.createElement('div');
+      emailDiv.style.cssText = 'font-size:11px;color:var(--text3);font-family:monospace;margin-bottom:4px;';
+      emailDiv.textContent = r.userEmail || '';
+      el.appendChild(emailDiv);
+
+      const byDiv = document.createElement('div');
+      byDiv.style.cssText = 'font-size:11px;color:var(--text2);margin-bottom:10px;';
+      byDiv.innerHTML = 'Proposé par <strong>' + (r.requestedByName || r.requestedBy) + '</strong> · ' + date;
+      el.appendChild(byDiv);
+
+      const btnRow = document.createElement('div');
+      btnRow.style.cssText = 'display:flex;gap:6px;';
+
+      const btnApprove = document.createElement('button');
+      btnApprove.className = 'admin-btn pro';
+      btnApprove.style.cssText = 'flex:1;font-size:12px;padding:6px;';
+      btnApprove.innerHTML = '✓ Approuver ' + planLabel;
+      const docId = doc.id;
+      const userId = r.userId;
+      const userName = r.userName;
+      btnApprove.addEventListener('click', () => approveProRequest(docId, userId, userName, targetPlan));
+
+      const btnReject = document.createElement('button');
+      btnReject.className = 'admin-btn block';
+      btnReject.style.cssText = 'flex:1;font-size:12px;padding:6px;';
+      btnReject.innerHTML = '✕ Refuser';
+      btnReject.addEventListener('click', () => rejectProRequest(docId, userName));
+
+      btnRow.appendChild(btnApprove);
+      btnRow.appendChild(btnReject);
+      el.appendChild(btnRow);
+      list.appendChild(el);
+    });
+  } catch(e) {
+    list.innerHTML = '<div style="color:var(--accent3);padding:10px;font-size:12px;">Erreur: ' + e.message + '</div>';
+  }
+}
+
+// Admin approuve une demande Pro
+async function approveProRequest(requestId, userId, userName, targetPlan) {
+  const plan = targetPlan || 'pro';
+  const label = plan === 'super' ? 'Super' : 'Pro';
+  if (!confirm('Approuver le plan ' + label + ' pour ' + userName + ' ?')) return;
+  try {
+    await db.collection('users').doc(userId).update({ plan: plan, planUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(), planUpdatedBy: ADMIN_EMAIL });
+    await db.collection('pro_requests').doc(requestId).update({
+      status: 'approved',
+      approvedBy: ADMIN_EMAIL,
+      approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    alert('✓ ' + userName + ' est maintenant ' + label + ' !');
+    loadApprovals();
+  } catch(e) { alert('Erreur: ' + e.message); }
+}
+
+// Admin refuse une demande Pro
+async function rejectProRequest(requestId, userName) {
+  if (!confirm('Refuser la demande pour ' + userName + ' ?')) return;
+  try {
+    await db.collection('pro_requests').doc(requestId).update({
+      status: 'rejected',
+      rejectedBy: ADMIN_EMAIL,
+      rejectedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    alert('Demande refusée.');
+    loadApprovals();
+  } catch(e) { alert('Erreur: ' + e.message); }
+}
+
+async function checkPendingApprovals() {
+  try {
+    const snap = await db.collection('pro_requests').where('status', '==', 'pending').get();
+    const count = snap.size;
+    const tabA = document.getElementById('tab-approvals');
+    if (tabA) {
+      if (count > 0) {
+        tabA.textContent = '✅ Validations (' + count + ')';
+        tabA.style.color = '#fff';
+        tabA.style.background = 'var(--accent3)';
+        tabA.style.borderColor = 'var(--accent3)';
+      } else {
+        tabA.textContent = '✅ Validations';
+        tabA.style.color = '';
+        tabA.style.background = '';
+        tabA.style.borderColor = '';
+      }
+    }
+  } catch(e) { console.error('checkPendingApprovals:', e); }
+}
+
+// ===== MESSAGERIE SUPPORT =====
+
+// Charger la boîte de réception de l'utilisateur
+async function loadUserInbox() {
+  if (!currentUser) return;
+  const list = document.getElementById('inbox-list');
+  if (!list) return;
+  try {
+    const snap = await db.collection('feedbacks')
+      .where('uid', '==', currentUser.uid)
+      .limit(20).get();
+    if (snap.empty) { list.innerHTML = ''; return; }
+    list.innerHTML = '';
+    // Trier par lastMessageAt côté client
+    const sortedInbox = snap.docs.sort((a, b) => {
+      const ta = a.data().lastMessageAt ? a.data().lastMessageAt.toMillis() : 0;
+      const tb = b.data().lastMessageAt ? b.data().lastMessageAt.toMillis() : 0;
+      return tb - ta;
+    });
+    sortedInbox.forEach(doc => {
+      const f = doc.data();
+      const unread = !f.readByUser;
+      const icons = { suggestion:'💡', bug:'🐛', contact:'✉️', compliment:'⭐' };
+      const el = document.createElement('div');
+      el.className = 'inbox-item' + (unread ? ' unread' : '');
+      el.onclick = () => openThread(doc.id, false);
+      el.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span style="font-size:14px;">${icons[f.type]||'📩'}</span>
+          <span style="font-size:13px;font-weight:${unread?'600':'400'};color:var(--text);flex:1;">${f.subject||'Message'}</span>
+          ${unread ? '<div class="inbox-dot"></div>' : ''}
+        </div>
+        <div style="font-size:11px;color:var(--text3);font-family:monospace;">${f.lastMessage ? f.lastMessage.substring(0,60)+'...' : ''}</div>
+      `;
+      list.appendChild(el);
+    });
+  } catch(e) { console.log('Inbox error:', e.message); }
+}
+
+// Ouvrir un thread de conversation (modal)
+let currentThreadId = null;
+let isAdminView = false;
+
+async function openThread(threadId, adminMode) {
+  currentThreadId = threadId;
+  isAdminView = adminMode;
+  // Créer la modal thread si elle n'existe pas
+  let modal = document.getElementById('thread-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'thread-modal';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+      <div class="modal-box" style="max-width:500px;height:80vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;">
+          <div style="flex:1;">
+            <div id="thread-title" style="font-size:14px;font-weight:700;color:var(--text);">Conversation</div>
+            <div id="thread-sub" style="font-size:11px;color:var(--text3);font-family:monospace;"></div>
+          </div>
+          <button onclick="closeThread()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px;">✕</button>
+        </div>
+        <div id="thread-messages" class="support-thread" style="flex:1;overflow-y:auto;padding:16px;"></div>
+        <div style="padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0;">
+          <div class="support-reply-box">
+            <textarea class="support-reply-input" id="thread-reply" rows="2" placeholder="Écrire une réponse..."></textarea>
+            <button class="action-btn primary" onclick="sendThreadReply()" style="padding:8px 14px;align-self:flex-end;">Envoyer</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+  }
+  modal.classList.add('show');
+  await loadThreadMessages(threadId, adminMode);
+  // Marquer comme lu
+  try {
+    if (adminMode) {
+      await db.collection('feedbacks').doc(threadId).update({ read: true });
+    } else {
+      await db.collection('feedbacks').doc(threadId).update({ readByUser: true });
+    }
+  } catch(e) {}
+}
+
+async function loadThreadMessages(threadId, adminMode) {
+  const container = document.getElementById('thread-messages');
+  const title = document.getElementById('thread-title');
+  const sub = document.getElementById('thread-sub');
+  if (!container) return;
+  container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);">Chargement...</div>';
+  try {
+    const threadDoc = await db.collection('feedbacks').doc(threadId).get();
+    const thread = threadDoc.data();
+    if (title) title.textContent = thread.subject || 'Conversation';
+    if (sub) sub.textContent = adminMode ? ('De: ' + (thread.fromName||thread.from)) : 'Support NexusAI';
+    const snap = await db.collection('feedbacks').doc(threadId)
+      .collection('messages').orderBy('sentAt', 'asc').get();
+    container.innerHTML = '';
+    snap.docs.forEach(doc => {
+      const m = doc.data();
+      const isFromUser = m.from === 'user';
+      const isFromCurrentUser = adminMode ? !isFromUser : isFromUser;
+      const time = m.sentAt ? new Date(m.sentAt.toMillis()).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '';
+      const el = document.createElement('div');
+      el.style.cssText = 'display:flex;flex-direction:column;align-items:' + (isFromCurrentUser ? 'flex-end' : 'flex-start') + ';';
+      el.innerHTML = `
+        <div class="support-msg ${isFromCurrentUser ? 'admin' : 'user'}">
+          <div class="support-msg-meta">${m.fromName||m.from} · ${time}</div>
+          <div class="support-msg-text">${m.text}</div>
+        </div>`;
+      container.appendChild(el);
+    });
+    container.scrollTop = container.scrollHeight;
+  } catch(e) {
+    container.innerHTML = '<div style="color:var(--accent3);padding:10px;">Erreur: ' + e.message + '</div>';
+  }
+}
+
+async function sendThreadReply() {
+  if (!currentThreadId || !currentUser) return;
+  const input = document.getElementById('thread-reply');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  const fromRole = isAdminView ? 'admin' : 'user';
+  try {
+    await db.collection('feedbacks').doc(currentThreadId)
+      .collection('messages').add({
+        text,
+        from: fromRole,
+        fromName: currentUser.displayName || currentUser.email,
+        sentAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    // Mettre à jour le thread
+    const updateData = {
+      lastMessage: text,
+      lastMessageAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    if (isAdminView) {
+      updateData.read = true;
+      updateData.readByUser = false; // Non lu par l'utilisateur
+    } else {
+      updateData.readByUser = true;
+      updateData.read = false; // Non lu par l'admin
+    }
+    await db.collection('feedbacks').doc(currentThreadId).update(updateData);
+    await loadThreadMessages(currentThreadId, isAdminView);
+    if (!isAdminView) loadUserInbox();
+  } catch(e) { alert('Erreur: ' + e.message); }
+}
+
+function closeThread() {
+  const modal = document.getElementById('thread-modal');
+  if (modal) modal.classList.remove('show');
+  currentThreadId = null;
+  loadUserInbox();
+}
+
+// ===== ESPACE MODÉRATEUR =====
+let modFeedbacksAll = [];
+let modCurrentFilter = 'all';
+
+async function loadModeratorData() {
+  if (!currentUser || currentUser.role !== 'moderator') return;
+  showModTab('feedbacks');
+}
+
+function showModTab(tab) {
+  const content = document.getElementById('mod-content');
+  const filterRow = document.getElementById('mod-filter-row');
+  const tabs = ['mod-tab-feedbacks', 'mod-tab-users', 'mod-tab-propose'];
+  tabs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.background=''; el.style.borderColor=''; el.style.color=''; }
+  });
+  const activeTab = document.getElementById('mod-tab-' + tab);
+  if (activeTab) { activeTab.style.background='rgba(83,74,183,0.3)'; activeTab.style.borderColor='#7F77DD'; activeTab.style.color='#7F77DD'; }
+  if (filterRow) filterRow.style.display = tab === 'feedbacks' ? 'flex' : 'none';
+  if (tab === 'feedbacks') loadModFeedbacks();
+  else if (tab === 'users') loadModUsers();
+  else if (tab === 'propose') loadModPropositions();
+}
+
+async function loadModFeedbacks() {
+  const content = document.getElementById('mod-content');
+  if (!content) return;
+  content.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);">Chargement...</div>';
+  try {
+    const snap = await db.collection('feedbacks').limit(100).get();
+    modFeedbacksAll = snap.docs.map(d => ({id: d.id, ...d.data()}))
+      .sort((a,b) => {
+        const ta = a.sentAt ? a.sentAt.toMillis() : 0;
+        const tb = b.sentAt ? b.sentAt.toMillis() : 0;
+        return tb - ta;
+      });
+    // Stats
+    const pending = modFeedbacksAll.filter(f => f.status !== 'resolved').length;
+    const statF = document.getElementById('mod-stat-feedbacks');
+    const statP = document.getElementById('mod-stat-pending');
+    if (statF) statF.textContent = modFeedbacksAll.length;
+    if (statP) statP.textContent = pending;
+    renderModFeedbacks();
+  } catch(e) {
+    content.innerHTML = '<div style="color:var(--accent3);padding:10px;font-size:12px;">Erreur: ' + e.message + '</div>';
+  }
+}
+
+function filterModFeedbacks(filter) {
+  modCurrentFilter = filter;
+  ['all','open','resolved'].forEach(f => {
+    const el = document.getElementById('mod-filter-' + f);
+    if (el) { el.style.background = f === filter ? 'rgba(83,74,183,0.3)' : ''; el.style.borderColor = f === filter ? '#7F77DD' : ''; el.style.color = f === filter ? '#7F77DD' : ''; }
+  });
+  renderModFeedbacks();
+}
+
+function renderModFeedbacks() {
+  const content = document.getElementById('mod-content');
+  if (!content) return;
+  let filtered = modFeedbacksAll;
+  if (modCurrentFilter === 'open') filtered = filtered.filter(f => f.status !== 'resolved');
+  else if (modCurrentFilter === 'resolved') filtered = filtered.filter(f => f.status === 'resolved');
+  content.innerHTML = '';
+  if (!filtered.length) {
+    content.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">Aucun feedback</div>';
+    return;
+  }
+  const icons = { suggestion:'💡', bug:'🐛', contact:'✉️', compliment:'⭐' };
+  filtered.forEach(f => {
+    const isResolved = f.status === 'resolved';
+    const date = f.sentAt ? new Date(f.sentAt.toMillis()).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+    const el = document.createElement('div');
+    el.style.cssText = 'background:var(--bg2);border:1px solid ' + (!f.read ? 'var(--accent)' : 'var(--border)') + ';border-radius:10px;overflow:hidden;opacity:' + (isResolved ? '0.6' : '1') + ';';
+    el.innerHTML = `
+      <div style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:8px;" onclick="openThread('${f.id}',true)">
+        <span style="font-size:14px;">${icons[f.type]||'📩'}</span>
+        <div style="flex:1;">
+          <div style="font-size:12px;font-weight:${!f.read?'700':'500'};color:var(--text);">${f.fromName||'Utilisateur'}</div>
+          <div style="font-size:11px;color:var(--text3);font-family:monospace;">${date}</div>
+        </div>
+        ${isResolved ? '<span style="font-size:9px;padding:1px 6px;border-radius:10px;background:rgba(0,212,170,0.15);color:var(--accent2);font-family:monospace;">RÉSOLU</span>' : '<span style="font-size:9px;padding:1px 6px;border-radius:10px;background:rgba(255,107,74,0.15);color:var(--accent3);font-family:monospace;">EN ATTENTE</span>'}
+        <span style="color:var(--text3);">›</span>
+      </div>
+      <div style="padding:0 14px 8px;display:flex;gap:6px;">
+        <button class="admin-btn" onclick="openThread('${f.id}',true)" style="font-size:10px;">💬 Répondre</button>
+        ${!isResolved ? `<button class="admin-btn pro" onclick="markFeedbackResolved('${f.id}')" style="font-size:10px;">✓ Résolu</button>` : `<button class="admin-btn" onclick="markFeedbackOpen('${f.id}')" style="font-size:10px;">↩ Rouvrir</button>`}
+        <button class="admin-btn block" onclick="deleteFeedback('${f.id}')" style="font-size:10px;">🗑 Supprimer</button>
+      </div>`;
+    content.appendChild(el);
+  });
+}
+
+async function markFeedbackResolved(id) {
+  try {
+    await db.collection('feedbacks').doc(id).update({ status: 'resolved', resolvedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    loadModFeedbacks();
+  } catch(e) { alert('Erreur: ' + e.message); }
+}
+
+async function markFeedbackOpen(id) {
+  try {
+    await db.collection('feedbacks').doc(id).update({ status: 'open' });
+    loadModFeedbacks();
+  } catch(e) { alert('Erreur: ' + e.message); }
+}
+
+async function deleteFeedback(id) {
+  if (!confirm('Supprimer ce feedback définitivement ?')) return;
+  try {
+    await db.collection('feedbacks').doc(id).delete();
+    loadModFeedbacks();
+  } catch(e) { alert('Erreur: ' + e.message); }
+}
+
+async function loadModUsers() {
+  const div = document.getElementById('mod-content');
+  if (!div) return;
+  div.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);">Chargement...</div>';
+  try {
+    const snap = await db.collection('users').get();
+    const users = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    div.innerHTML = '';
+    if (!users.length) {
+      div.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);">Aucun utilisateur</div>';
+      return;
+    }
+    const planColors = {free:'var(--text3)',pro:'#00d4aa',super:'#f4c430',blocked:'var(--accent3)'};
+    const planBg = {free:'rgba(139,149,168,0.15)',pro:'rgba(0,212,170,0.15)',super:'rgba(244,196,48,0.15)',blocked:'rgba(255,107,74,0.15)'};
+    users.forEach(u => {
+      const plan = u.plan || 'free';
+      const el = document.createElement('div');
+      el.className = 'user-card';
+      el.style.cssText = 'display:flex;align-items:center;gap:10px;';
+
+      // Photo
+      const img = document.createElement('img');
+      img.src = u.photo || '';
+      img.onerror = function(){ this.style.display='none'; };
+      img.style.cssText = 'width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;';
+      el.appendChild(img);
+
+      // Info
+      const info = document.createElement('div');
+      info.className = 'user-card-info';
+      info.style.flex = '1';
+      const nameDiv = document.createElement('div');
+      nameDiv.style.cssText = 'display:flex;align-items:center;gap:6px;';
+      const nameSpan = document.createElement('span');
+      nameSpan.style.cssText = 'font-size:13px;font-weight:500;color:var(--text);';
+      nameSpan.textContent = u.name || 'Inconnu';
+      const badge = document.createElement('span');
+      badge.style.cssText = 'font-size:9px;padding:2px 7px;border-radius:10px;font-family:monospace;font-weight:700;background:' + (planBg[plan]||planBg.free) + ';color:' + (planColors[plan]||planColors.free) + ';';
+      badge.textContent = plan.toUpperCase();
+      nameDiv.appendChild(nameSpan);
+      nameDiv.appendChild(badge);
+      info.appendChild(nameDiv);
+      const emailDiv = document.createElement('div');
+      emailDiv.className = 'user-card-email';
+      emailDiv.textContent = u.email || '';
+      info.appendChild(emailDiv);
+      el.appendChild(info);
+
+      // Boutons propose
+      const btns = document.createElement('div');
+      btns.style.cssText = 'display:flex;flex-direction:column;gap:4px;';
+      const uid = u.id;
+      const uName = u.name || 'Utilisateur';
+      const uEmail = u.email || '';
+
+      if (plan !== 'pro' && plan !== 'super' && plan !== 'blocked') {
+        const btnPro = document.createElement('button');
+        btnPro.className = 'admin-btn pro';
+        btnPro.style.cssText = 'font-size:11px;padding:4px 10px;';
+        btnPro.innerHTML = '⭐ Proposer Pro';
+        btnPro.addEventListener('click', () => proposeProActivation(uid, uName, uEmail, 'pro'));
+        btns.appendChild(btnPro);
+      }
+      if (plan !== 'super' && plan !== 'blocked') {
+        const btnSuper = document.createElement('button');
+        btnSuper.className = 'admin-btn';
+        btnSuper.style.cssText = 'font-size:11px;padding:4px 10px;border-color:#f4c430;color:#f4c430;';
+        btnSuper.innerHTML = '✨ Proposer Super';
+        btnSuper.addEventListener('click', () => proposeProActivation(uid, uName, uEmail, 'super'));
+        btns.appendChild(btnSuper);
+      }
+      if (plan === 'super') {
+        const ok = document.createElement('span');
+        ok.style.cssText = 'font-size:11px;color:#f4c430;font-family:monospace;';
+        ok.textContent = '✓ Super';
+        btns.appendChild(ok);
+      } else if (plan === 'pro') {
+        const ok = document.createElement('span');
+        ok.style.cssText = 'font-size:11px;color:#00d4aa;font-family:monospace;';
+        ok.textContent = '✓ Pro';
+        btns.appendChild(ok);
+      }
+      el.appendChild(btns);
+      div.appendChild(el);
+    });
+  } catch(e) {
+    div.innerHTML = '<div style="color:var(--accent3);padding:10px;font-size:12px;">Erreur: ' + e.message + '</div>';
+  }
+}
+
+async function loadModPropositions() {
+  const content = document.getElementById('mod-content');
+  if (!content || !currentUser) return;
+  content.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);">Chargement...</div>';
+  try {
+    const snap = await db.collection('pro_requests')
+      .where('requestedBy', '==', currentUser.email).get();
+    content.innerHTML = '';
+    if (snap.empty) {
+      content.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">Aucune proposition envoyée</div>';
+      return;
+    }
+    snap.docs.forEach(doc => {
+      const r = doc.data();
+      const statusColors = { pending:'var(--accent3)', approved:'var(--accent2)', rejected:'var(--text3)' };
+      const statusLabels = { pending:'⏳ En attente', approved:'✓ Approuvé', rejected:'✕ Refusé' };
+      const el = document.createElement('div');
+      el.style.cssText = 'background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;';
+      el.innerHTML = `
+        <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px;">${r.userName||'Utilisateur'}</div>
+        <div style="font-size:11px;color:var(--text3);font-family:monospace;margin-bottom:6px;">${r.userEmail||''}</div>
+        <span style="font-size:11px;color:${statusColors[r.status]||'var(--text3)'};font-family:monospace;">${statusLabels[r.status]||r.status}</span>`;
+      content.appendChild(el);
+    });
+  } catch(e) {
+    content.innerHTML = '<div style="color:var(--accent3);padding:10px;font-size:12px;">Erreur: ' + e.message + '</div>';
+  }
+}
+
+async function filterAdminFeedbacks(filter) {
+  const div = document.getElementById('admin-feedbacks');
+  if (!div) return;
+  const icons = { suggestion:'💡', bug:'🐛', contact:'✉️', compliment:'⭐' };
+  try {
+    const snap = await db.collection('feedbacks').limit(100).get();
+    let docs = snap.docs.sort((a,b) => {
+      const ta = a.data().sentAt ? a.data().sentAt.toMillis() : 0;
+      const tb = b.data().sentAt ? b.data().sentAt.toMillis() : 0;
+      return tb - ta;
+    });
+    if (filter === 'open') docs = docs.filter(d => d.data().status !== 'resolved');
+    else if (filter === 'resolved') docs = docs.filter(d => d.data().status === 'resolved');
+    div.innerHTML = '';
+    if (!docs.length) { div.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);">Aucun feedback</div>'; return; }
+    docs.forEach(doc => {
+      const f = doc.data();
+      const isResolved = f.status === 'resolved';
+      const date = f.sentAt ? new Date(f.sentAt.toMillis()).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+      const el = document.createElement('div');
+      el.className = 'feedback-card' + (!f.read ? ' unread' : '');
+      el.style.opacity = isResolved ? '0.6' : '1';
+      el.onclick = () => openThread(doc.id, true);
+      el.innerHTML = `
+        <div class="feedback-header">
+          <span style="font-size:16px;">${icons[f.type]||'📩'}</span>
+          <div style="flex:1;">
+            <div style="font-size:12px;font-weight:${!f.read?'700':'500'};color:var(--text);">${f.fromName||f.name||'Utilisateur'}</div>
+            <div style="font-size:11px;color:var(--text3);font-family:monospace;">${f.from||''} · ${date}</div>
+          </div>
+          ${isResolved ? '<span style="font-size:9px;padding:1px 6px;border-radius:10px;background:rgba(0,212,170,0.15);color:var(--accent2);font-family:monospace;">RÉSOLU</span>' : (!f.read ? '<span style="font-size:9px;padding:1px 6px;border-radius:10px;background:var(--accent);color:#fff;font-family:monospace;">NOUVEAU</span>' : '')}
+          <span style="color:var(--text3);font-size:14px;">›</span>
+        </div>
+        <div style="padding:0 14px 10px;font-size:12px;color:var(--text3);">${(f.lastMessage||f.message||'').substring(0,80)}</div>`;
+      div.appendChild(el);
+    });
+  } catch(e) { div.innerHTML = '<div style="color:var(--accent3);padding:10px;">Erreur: ' + e.message + '</div>'; }
+}
+
+// ===== RECHERCHE WEB POUR L'IA (Wikipedia + date réelle) =====
+async function searchWeb(query) {
+  try {
+    // Wikipedia API - sans CORS
+    const url = 'https://fr.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(query.split(' ').slice(0,3).join('_'));
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.extract) return 'Source Wikipedia: ' + data.extract.substring(0, 500);
+    }
+  } catch(e) {}
+  return null;
+}
+
+// Obtenir la date et l'heure réelles
+function getRealDateTime() {
+  const now = new Date();
+  return now.toLocaleDateString('fr-FR', {weekday:'long', year:'numeric', month:'long', day:'numeric'}) +
+    ' à ' + now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+}
+
+// Détecter si la question nécessite une recherche web ou la date
+function needsWebSearch(text) {
+  const keywords = ['actualité','récent','aujourd\'hui','maintenant','date','heure','quelle heure','quel jour','prix','météo','news','dernières','2024','2025','2026','résultat','score','classement'];
+  const lower = text.toLowerCase();
+  return keywords.some(k => lower.includes(k));
+}
+
+// ===== GÉNÉRATEUR CV =====
+async function generateCV() {
+  const plan = currentUser ? (currentUser.plan || 'free') : 'free';
+  if (plan === 'free') { openUpgradeModal(); return; }
+  const name = document.getElementById('cv-name').value.trim();
+  if (!name) { alert('Entre au moins ton nom !'); return; }
+  const cvData = {
+    name, photo: cvPhotoBase64 || '', title: document.getElementById('cv-title').value,
+    email: document.getElementById('cv-email').value,
+    phone: document.getElementById('cv-phone').value,
+    location: document.getElementById('cv-location').value,
+    summary: document.getElementById('cv-summary').value,
+    experience: document.getElementById('cv-experience').value,
+    education: document.getElementById('cv-education').value,
+    skills: document.getElementById('cv-skills').value,
+    languages: document.getElementById('cv-languages').value,
+    linkedin: document.getElementById('cv-linkedin') ? document.getElementById('cv-linkedin').value : ''
+  };
+  const btn = document.querySelector('#panel-cv button.primary');
+  if (btn) btn.textContent = '⏳ Génération en cours...';
+  try {
+    // Générer les données structurées du CV via l'IA
+    const prompt = `Tu es un expert RH. Génère un objet JSON pour un CV à partir de ces données:
+Nom: ${cvData.name} | Poste: ${cvData.title} | Email: ${cvData.email} | Tel: ${cvData.phone} | Lieu: ${cvData.location}
+Résumé: ${cvData.summary}
+Expériences (format: Poste|Entreprise|Période|Description): ${cvData.experience}
+Formations (format: Diplôme|École|Année): ${cvData.education}
+Compétences: ${cvData.skills}
+Langues: ${cvData.languages}
+
+Réponds UNIQUEMENT avec un JSON valide (pas de markdown) avec cette structure exacte:
+{"name":"...","title":"...","email":"...","phone":"...","location":"...","summary":"...","experiences":[{"poste":"...","entreprise":"...","periode":"...","description":"..."}],"educations":[{"diplome":"...","ecole":"...","annee":"..."}],"skills":["..."],"languages":["..."]}`;
+    
+    const raw = await callAPI([{role:'user',content:prompt}], 'Réponds uniquement avec du JSON valide, sans markdown ni backticks.', 1500);
+    let cv;
+    try {
+      const cleaned = raw.replace(/```json|```/g,'').trim();
+      cv = JSON.parse(cleaned);
+    } catch(e) {
+      // Fallback: construire le CV depuis les données saisies
+      cv = {
+        name: cvData.name, title: cvData.title, email: cvData.email,
+        phone: cvData.phone, location: cvData.location, summary: cvData.summary,
+        experiences: cvData.experience.split('\n').filter(Boolean).map(l => {
+          const p = l.split('|'); return {poste:p[0]||'',entreprise:p[1]||'',periode:p[2]||'',description:p[3]||''};
+        }),
+        educations: cvData.education.split('\n').filter(Boolean).map(l => {
+          const p = l.split('|'); return {diplome:p[0]||'',ecole:p[1]||'',annee:p[2]||''};
+        }),
+        skills: cvData.skills.split(',').map(s=>s.trim()).filter(Boolean),
+        languages: cvData.languages.split(',').map(s=>s.trim()).filter(Boolean)
+      };
+    }
+    renderCVHtml(cv);
+    document.getElementById('cv-form').style.display = 'none';
+    document.getElementById('cv-result').style.display = 'flex';
+  } catch(e) {
+    alert('Erreur: ' + e.message);
+  } finally {
+    if (btn) btn.textContent = '✨ Générer mon CV professionnel';
+  }
+}
+
+function renderCVHtml(cv) {
+  const skills = (cv.skills||[]);
+  const langs = (cv.languages||[]);
+  const exps = (cv.experiences||[]);
+  const edus = (cv.educations||[]);
+
+  const skillBars = skills.map(s=>`
+    <div style="margin-bottom:8px;">
+      <div style="font-size:10px;color:#ccc;margin-bottom:3px;font-family:Arial;">${s}</div>
+      <div style="background:rgba(255,255,255,0.2);border-radius:3px;height:3px;">
+        <div style="background:#5b9bd5;height:3px;border-radius:3px;width:${65+Math.floor(Math.random()*30)}%;"></div>
+      </div>
+    </div>`).join('');
+
+  const langBars = langs.map(l=>`
+    <div style="margin-bottom:8px;">
+      <div style="font-size:10px;color:#ccc;margin-bottom:3px;font-family:Arial;">${l}</div>
+      <div style="background:rgba(255,255,255,0.2);border-radius:3px;height:3px;">
+        <div style="background:#5b9bd5;height:3px;border-radius:3px;width:${60+Math.floor(Math.random()*35)}%;"></div>
+      </div>
+    </div>`).join('');
+
+  const expHtml = exps.map(e=>`
+    <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #eee;">
+      <table style="width:100%;border-collapse:collapse;"><tr>
+        <td style="font-size:12px;font-weight:700;color:#1a1a2e;font-family:Arial;">${e.poste||''}</td>
+        <td style="font-size:10px;color:#888;font-style:italic;text-align:right;white-space:nowrap;font-family:Arial;">${e.periode||''}</td>
+      </tr></table>
+      <div style="font-size:11px;color:#5b9bd5;font-style:italic;margin-top:2px;font-family:Arial;">${e.entreprise||''}</div>
+      ${e.description?`<div style="font-size:11px;color:#555;line-height:1.6;margin-top:4px;font-family:Arial;">${e.description}</div>`:''}
+    </div>`).join('');
+
+  const eduHtml = edus.map(e=>`
+    <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #eee;">
+      <table style="width:100%;border-collapse:collapse;"><tr>
+        <td style="font-size:12px;font-weight:700;color:#1a1a2e;font-family:Arial;">${e.diplome||''}</td>
+        <td style="font-size:10px;color:#888;font-style:italic;text-align:right;white-space:nowrap;font-family:Arial;">${e.annee||''}</td>
+      </tr></table>
+      <div style="font-size:11px;color:#5b9bd5;font-style:italic;margin-top:2px;font-family:Arial;">${e.ecole||''}</div>
+    </div>`).join('');
+
+  const cvHTML = `
+<div id="cv-print" style="display:table;width:780px;min-height:1000px;background:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.2);font-family:Arial,sans-serif;">
+
+  <!-- SIDEBAR GAUCHE -->
+  <div style="display:table-cell;width:220px;background:#2c3e50;vertical-align:top;padding:0;">
+    <!-- Photo zone -->
+    <div style="background:#34495e;padding:24px 16px;text-align:center;">
+      <div style="width:80px;height:80px;border-radius:50%;background:#5b9bd5;margin:0 auto 10px;border:3px solid #5b9bd5;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+        <span style="font-size:32px;">👤</span>
+      </div>
+      <div style="font-size:9px;color:#aaa;letter-spacing:1px;text-transform:uppercase;">NexusAI</div>
+    </div>
+
+    <div style="padding:16px 14px;">
+      <!-- Contact -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:9px;font-weight:700;color:#5b9bd5;text-transform:uppercase;letter-spacing:2px;border-bottom:1px solid #5b9bd5;padding-bottom:4px;margin-bottom:8px;font-family:Arial;">Contact</div>
+        ${cv.email?`<div style="font-size:10px;color:#ccc;margin-bottom:5px;font-family:Arial;">✉ ${cv.email}</div>`:''}
+        ${cv.phone?`<div style="font-size:10px;color:#ccc;margin-bottom:5px;font-family:Arial;">☎ ${cv.phone}</div>`:''}
+        ${cv.location?`<div style="font-size:10px;color:#ccc;margin-bottom:5px;font-family:Arial;">⌂ ${cv.location}</div>`:''}
+        ${cv.linkedin?`<div style="font-size:10px;color:#ccc;margin-bottom:5px;font-family:Arial;">in ${cv.linkedin}</div>`:''}
+      </div>
+
+      <!-- Compétences -->
+      ${skillBars?`<div style="margin-bottom:16px;">
+        <div style="font-size:9px;font-weight:700;color:#5b9bd5;text-transform:uppercase;letter-spacing:2px;border-bottom:1px solid #5b9bd5;padding-bottom:4px;margin-bottom:8px;font-family:Arial;">Compétences</div>
+        ${skillBars}
+      </div>`:''}
+
+      <!-- Langues -->
+      ${langBars?`<div style="margin-bottom:16px;">
+        <div style="font-size:9px;font-weight:700;color:#5b9bd5;text-transform:uppercase;letter-spacing:2px;border-bottom:1px solid #5b9bd5;padding-bottom:4px;margin-bottom:8px;font-family:Arial;">Langues</div>
+        ${langBars}
+      </div>`:''}
+    </div>
+  </div>
+
+  <!-- CONTENU DROIT -->
+  <div style="display:table-cell;vertical-align:top;background:#fff;">
+    <!-- En-tête -->
+    <div style="background:#5b9bd5;padding:24px 24px 18px;">
+      <div style="font-size:20px;font-weight:800;color:#fff;letter-spacing:2px;text-transform:uppercase;font-family:Arial;">${(cv.name||'').toUpperCase()}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.9);margin-top:4px;letter-spacing:1px;font-family:Arial;">${cv.title||''}</div>
+    </div>
+
+    <div style="padding:20px 24px;">
+      <!-- Profil -->
+      ${cv.summary?`<div style="margin-bottom:18px;">
+        <div style="font-size:9px;font-weight:700;color:#5b9bd5;text-transform:uppercase;letter-spacing:2px;border-bottom:2px solid #5b9bd5;padding-bottom:3px;margin-bottom:8px;font-family:Arial;">Profil</div>
+        <div style="font-size:11px;color:#444;line-height:1.7;font-family:Arial;">${cv.summary}</div>
+      </div>`:''}
+
+      <!-- Formation -->
+      ${eduHtml?`<div style="margin-bottom:18px;">
+        <div style="font-size:9px;font-weight:700;color:#5b9bd5;text-transform:uppercase;letter-spacing:2px;border-bottom:2px solid #5b9bd5;padding-bottom:3px;margin-bottom:10px;font-family:Arial;">Formation</div>
+        ${eduHtml}
+      </div>`:''}
+
+      <!-- Expériences -->
+      ${expHtml?`<div style="margin-bottom:18px;">
+        <div style="font-size:9px;font-weight:700;color:#5b9bd5;text-transform:uppercase;letter-spacing:2px;border-bottom:2px solid #5b9bd5;padding-bottom:3px;margin-bottom:10px;font-family:Arial;">Expérience professionnelle</div>
+        ${expHtml}
+      </div>`:''}
+    </div>
+  </div>
+
+</div>`;
+
+  document.getElementById('cv-output').innerHTML = cvHTML;
+}
+
+function copyCV() {
+  const text = document.getElementById('cv-print') ? document.getElementById('cv-print').innerText : document.getElementById('cv-output').innerText;
+  navigator.clipboard.writeText(text).then(() => alert('CV copié !')).catch(() => alert('Copie non disponible'));
+}
+
+function printCV() {
+  const cvContent = document.getElementById('cv-print');
+  if (!cvContent) { alert('Génère le CV d\'abord !'); return; }
+  const win = window.open('', '_blank');
+  const scr = 'scr'+'ipt';
+  const html = '<!DOCTYPE html><html><head><title>CV</title>'
+    + '<style>*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
+    + 'body{background:#fff;}@page{margin:0;size:A4 portrait;}@media print{body{margin:0;}}'
+    + '</style></head><body>'
+    + cvContent.outerHTML
+    + '<' + scr + '>window.onload=function(){setTimeout(function(){window.print();},800);}</' + scr + '>'
+    + '</body></html>';
+  win.document.write(html);
+  win.document.close();
+}
+int(),500); }<\/script></body></html>`);
+  win.document.close();
+}
+
+function copyCV() {
+  const text = document.getElementById('cv-output').textContent;
+  navigator.clipboard.writeText(text).then(() => alert('CV copié dans le presse-papier !')).catch(() => alert('Copie non disponible'));
+}
+
+function printCV() {
+  const text = document.getElementById('cv-output').textContent;
+  const win = window.open('', '_blank');
+  win.document.write('<html><head><title>CV</title><style>body{font-family:Arial,sans-serif;padding:30px;max-width:700px;margin:0 auto;line-height:1.6;font-size:14px;}</style></head><body><pre style="white-space:pre-wrap;">' + text + '</pre></body></html>');
+  win.document.close();
+  win.print();
+}
+
+// ===== SÉRIE LITTÉRAIRE =====
+let currentMatiere = null;
+let serieExercices = {};
+
+function selectMatiere(matiere) {
+  currentMatiere = matiere;
+  // Mettre à jour les boutons
+  ['francais','espagnol','philosophie','histoire'].forEach(m => {
+    const btn = document.getElementById('mat-' + m);
+    if (btn) { btn.style.background = m === matiere ? 'var(--accent)' : ''; btn.style.color = m === matiere ? '#fff' : ''; btn.style.borderColor = m === matiere ? 'var(--accent)' : ''; }
+  });
+  loadSerieExercices(matiere);
+}
+
+async function loadSerieExercices(matiere) {
+  const content = document.getElementById('serie-content');
+  content.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);">Chargement des exercices...</div>';
+  try {
+    const snap = await db.collection('serie_exercices').where('matiere', '==', matiere).get();
+    serieExercices[matiere] = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    renderSerieExercices(matiere);
+  } catch(e) {
+    content.innerHTML = '<div style="color:var(--accent3);padding:10px;font-size:12px;">Erreur: ' + e.message + '</div>';
+  }
+}
+
+function renderSerieExercices(matiere) {
+  const content = document.getElementById('serie-content');
+  const exercices = serieExercices[matiere] || [];
+  const canManage = currentUser && (currentUser.email === ADMIN_EMAIL || currentUser.role === 'moderator');
+  if (!exercices.length) {
+    content.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">Aucun exercice pour cette matière.' + 
+      (canManage ? '<br><br><button class=\'action-btn primary\' onclick=\'openAddExercice()\' style=\'font-size:11px;\'>+ Ajouter un exercice</button>' : '') + '</div>';
+    return;
+  }
+  const matiereLabels = {francais:'🇫🇷 Français',espagnol:'🇪🇸 Espagnol',philosophie:'🧠 Philosophie',histoire:'🌍 Histoire-Géo'};
+  content.innerHTML = '';
+  if (canManage) {
+    const addBtn = document.createElement('button');
+    addBtn.className = 'action-btn primary';
+    addBtn.style.cssText = 'font-size:11px;margin-bottom:4px;';
+    addBtn.textContent = '+ Ajouter un exercice';
+    addBtn.onclick = openAddExercice;
+    content.appendChild(addBtn);
+  }
+  exercices.forEach(ex => {
+    const el = document.createElement('div');
+    el.style.cssText = 'background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;';
+    el.innerHTML = `
+      <div style="padding:12px 14px;cursor:pointer;" onclick="toggleExercice('${ex.id}')">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:500;color:var(--text);">${ex.titre||'Exercice'}</div>
+            <div style="font-size:11px;color:var(--text3);font-family:monospace;">${ex.type||''} · ${ex.annee||''}</div>
+          </div>
+          ${canManage ? `<button onclick="deleteSerieExercice('${ex.id}');event.stopPropagation();" style="background:none;border:none;color:var(--accent3);cursor:pointer;font-size:12px;">🗑</button>` : ''}
+          <span style="color:var(--text3);" id="arrow-${ex.id}">›</span>
+        </div>
+      </div>
+      <div id="ex-body-${ex.id}" style="display:none;padding:0 14px 12px;border-top:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--text2);line-height:1.7;margin:10px 0;white-space:pre-wrap;">${ex.contenu||''}</div>
+        <div style="display:flex;gap:6px;">
+          <button class="action-btn primary" onclick="corrigerExercice('${ex.id}')" style="font-size:11px;">✨ Corriger avec l'IA</button>
+          <button class="action-btn" onclick="analyserExercice('${ex.id}')" style="font-size:11px;">🔍 Analyser</button>
+        </div>
+      </div>`;
+    content.appendChild(el);
+  });
+}
+
+function toggleExercice(id) {
+  const body = document.getElementById('ex-body-' + id);
+  const arrow = document.getElementById('arrow-' + id);
+  if (body) { const open = body.style.display === 'block'; body.style.display = open ? 'none' : 'block'; if (arrow) arrow.textContent = open ? '›' : '⌄'; }
+}
+
+async function corrigerExercice(id) {
+  const ex = Object.values(serieExercices).flat().find(e => e.id === id);
+  if (!ex) return;
+  if (!checkMessageLimit()) return;
+  const corrDiv = document.getElementById('serie-correction');
+  const corrText = document.getElementById('serie-correction-text');
+  corrDiv.style.display = 'flex';
+  corrText.textContent = '⏳ Correction en cours...';
+  try {
+    const result = await callAPI(
+      [{role:'user', content: 'Voici un sujet de ' + ex.matiere + ': \n\n' + ex.contenu + '\n\nFais une correction détaillée, avec plan, arguments et exemples.'}],
+      'Tu es un professeur expert en ' + ex.matiere + ' niveau lycée en Côte d\'Ivoire. Fais des corrections complètes, pédagogiques et adaptées au programme ivoirien.',
+      2000
+    );
+    corrText.innerHTML = fmt(result);
+    setTimeout(saveSession, 1000);
+  } catch(e) { corrText.textContent = 'Erreur: ' + e.message; }
+}
+
+async function analyserExercice(id) {
+  const ex = Object.values(serieExercices).flat().find(e => e.id === id);
+  if (!ex) return;
+  if (!checkMessageLimit()) return;
+  const corrDiv = document.getElementById('serie-correction');
+  const corrText = document.getElementById('serie-correction-text');
+  corrDiv.style.display = 'flex';
+  corrText.textContent = '⏳ Analyse en cours...';
+  try {
+    const result = await callAPI(
+      [{role:'user', content: 'Analyse ce sujet de ' + ex.matiere + ': \n\n' + ex.contenu + '\n\nIdentifie les thèmes, les notions clés, les pièges à éviter et donne des conseils méthodologiques.'}],
+      'Tu es un professeur expert en ' + ex.matiere + ' niveau lycée. Donne une analyse méthodologique précise.',
+      1500
+    );
+    corrText.innerHTML = fmt(result);
+  } catch(e) { corrText.textContent = 'Erreur: ' + e.message; }
+}
+
+// Ajouter exercice (admin/modérateur)
+function openAddExercice() {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay show';
+  modal.id = 'add-exercice-modal';
+  modal.innerHTML = `
+    <div class="modal-box" style="max-width:500px;">
+      <div class="modal-title">Ajouter un exercice — ${currentMatiere}</div>
+      <div class="modal-sub">Importe un PDF ou colle le texte du sujet</div>
+      <input id="ex-titre" class="modal-input" placeholder="Titre du sujet (ex: Dissertation - La liberté - 2023)">
+      <div style="display:flex;gap:8px;">
+        <input id="ex-type" class="modal-input" placeholder="Type (Dissertation, Commentaire...)" style="flex:1;">
+        <input id="ex-annee" class="modal-input" placeholder="Année (ex: 2023)" style="flex:1;">
+      </div>
+      <!-- Upload PDF -->
+      <div style="border:2px dashed var(--border2);border-radius:8px;padding:12px;text-align:center;cursor:pointer;margin-bottom:8px;" onclick="document.getElementById('pdf-upload').click()">
+        <div style="font-size:24px;margin-bottom:4px;">📄</div>
+        <div style="font-size:12px;color:var(--text2);" id="pdf-label">Cliquer pour importer un PDF</div>
+        <div style="font-size:10px;color:var(--text3);">ou colle le texte ci-dessous</div>
+        <input type="file" id="pdf-upload" accept=".pdf,.txt,.doc,.docx" style="display:none;" onchange="handlePdfUpload(this)">
+      </div>
+      <textarea id="ex-contenu" class="modal-input" rows="5" placeholder="Le texte du sujet apparaîtra ici après import PDF, ou colle-le directement..."></textarea>
+      <div class="modal-actions">
+        <button class="modal-btn" onclick="document.getElementById('add-exercice-modal').remove()">Annuler</button>
+        <button class="modal-btn primary" onclick="saveSerieExercice()">Enregistrer →</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function saveSerieExercice() {
+  const titre = document.getElementById('ex-titre').value.trim();
+  const contenu = document.getElementById('ex-contenu').value.trim();
+  if (!titre || !contenu) { alert('Titre et contenu obligatoires !'); return; }
+  try {
+    await db.collection('serie_exercices').add({
+      matiere: currentMatiere,
+      titre,
+      type: document.getElementById('ex-type').value,
+      annee: document.getElementById('ex-annee').value,
+      contenu,
+      addedBy: currentUser.email,
+      addedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('add-exercice-modal').remove();
+    loadSerieExercices(currentMatiere);
+    alert('✓ Exercice ajouté !');
+  } catch(e) { alert('Erreur: ' + e.message); }
+}
+
+async function deleteSerieExercice(id) {
+  if (!confirm('Supprimer cet exercice ?')) return;
+  try {
+    await db.collection('serie_exercices').doc(id).delete();
+    loadSerieExercices(currentMatiere);
+  } catch(e) { alert('Erreur: ' + e.message); }
+}
+
+// ===== UPLOAD PDF SÉRIE LITTÉRAIRE =====
+async function handlePdfUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const label = document.getElementById('pdf-label');
+  if (label) label.textContent = '⏳ Lecture du fichier...';
+  
+  // Lire le fichier comme texte (pour .txt) ou base64 (pour PDF)
+  const reader = new FileReader();
+  
+  if (file.type === 'text/plain') {
+    reader.onload = e => {
+      document.getElementById('ex-contenu').value = e.target.result;
+      if (label) label.textContent = '✓ ' + file.name;
+      if (!document.getElementById('ex-titre').value) {
+        document.getElementById('ex-titre').value = file.name.replace('.txt','');
+      }
+    };
+    reader.readAsText(file);
+  } else if (file.type === 'application/pdf') {
+    // Lire le PDF et extraire le texte via l'IA
+    reader.onload = async e => {
+      const base64 = e.target.result.split(',')[1];
+      if (label) label.textContent = '⏳ Extraction du texte PDF...';
+      try {
+        // Utiliser l'IA pour extraire le texte du PDF via description
+        const result = await callAPI([
+          {role:'user', content: [
+            {type:'image_url', image_url:{url: 'data:application/pdf;base64,' + base64}},
+            {type:'text', text:'Extrait tout le texte de ce document PDF mot pour mot, sans reformuler.'}
+          ]}
+        ], 'Tu es un extracteur de texte. Extrais le texte exact du document.', 2000);
+        document.getElementById('ex-contenu').value = result;
+        if (label) label.textContent = '✓ ' + file.name + ' extrait';
+      } catch(e) {
+        // Fallback: demander à l'utilisateur de coller le texte
+        if (label) label.textContent = '⚠ Colle le texte manuellement';
+        alert('Extraction automatique non disponible. Ouvre le PDF et colle le texte dans la zone ci-dessous.');
+      }
+    };
+    reader.readAsDataURL(file);
+  } else {
+    reader.onload = e => {
+      document.getElementById('ex-contenu').value = e.target.result;
+      if (label) label.textContent = '✓ ' + file.name;
+    };
+    reader.readAsText(file);
+  }
+}
+
+// ===== PHOTO CV =====
+let cvPhotoBase64 = null;
+function previewCVPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    cvPhotoBase64 = e.target.result;
+    const preview = document.getElementById('cv-photo-preview');
+    if (preview) preview.innerHTML = `<img src="${cvPhotoBase64}" style="width:100%;height:100%;object-fit:cover;">`;
+  };
+  reader.readAsDataURL(file);
+}
+</script>
+
+<!-- BANNIÈRE UPGRADE -->
+<div class="upgrade-banner" id="upgrade-banner">
+  <div class="upgrade-title">Limite journalière atteinte</div>
+  <div class="upgrade-sub" id="upgrade-banner-text">Tu as atteint ta limite journalière.<br>Contacte l'admin pour upgrader ton plan !</div>
+  <button class="upgrade-btn" onclick="document.getElementById('upgrade-banner').classList.remove('show')">Contactez l'admin</button>
+</div>
+
+</body>
+</html>
