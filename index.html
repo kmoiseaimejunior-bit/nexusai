@@ -1614,6 +1614,8 @@ async function loadAdminData() {
         renderAdminUsers();
       }
       updateAdminStats();
+      checkUnreadFeedbacks();
+      if (currentUser && currentUser.email === ADMIN_EMAIL) checkPendingApprovals();
     }, e => {
       list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--accent3);font-size:13px;">Erreur: ' + e.message + '<br><small>Vérifiez les règles Firestore</small></div>';
       console.error('Admin listener error:', e);
@@ -1675,76 +1677,137 @@ function renderAdminUsers() {
   }
   const isAdmin = currentUser && currentUser.email === ADMIN_EMAIL;
   const isMod = currentUser && currentUser.role === 'moderator';
+  const planColors = {free:'var(--text3)',pro:'#00d4aa',super:'#f4c430',blocked:'var(--accent3)'};
+  const planBg = {free:'rgba(139,149,168,0.15)',pro:'rgba(0,212,170,0.15)',super:'rgba(244,196,48,0.15)',blocked:'rgba(255,107,74,0.15)'};
 
   filteredUsers.forEach(u => {
     const plan = u.plan || 'free';
-    // Badge plan
-    const planColors = {free:'var(--text3)',pro:'#00d4aa',super:'#f4c430',blocked:'var(--accent3)'};
-    const planBg = {free:'rgba(139,149,168,0.15)',pro:'rgba(0,212,170,0.15)',super:'rgba(244,196,48,0.15)',blocked:'rgba(255,107,74,0.15)'};
-    const planLabel = `<span style="font-size:9px;padding:2px 7px;border-radius:10px;background:${planBg[plan]||planBg.free};color:${planColors[plan]||planColors.free};font-family:monospace;font-weight:700;">${plan.toUpperCase()}</span>`;
-
     const lastLogin = u.lastLogin ? (u.lastLogin.toMillis ? u.lastLogin.toMillis() : new Date(u.lastLogin).getTime()) : 0;
     const isOnline = lastLogin && (Date.now() - lastLogin) < 5 * 60 * 1000;
-    const onlineDot = isOnline ? '<span style="width:8px;height:8px;border-radius:50%;background:#00d4aa;display:inline-block;margin-right:4px;flex-shrink:0;"></span>' : '';
     const lastLoginStr = lastLogin ? new Date(lastLogin).toLocaleDateString('fr-FR', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : 'Jamais';
-
-    // Boutons selon le rôle
-    let actionButtons = '';
-    if (isAdmin) {
-      // Admin : sélecteur direct de plan
-      actionButtons = `
-        <select onchange="setUserPlan('${u.id}', this.value)" 
-          style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:11px;padding:4px 6px;cursor:pointer;font-family:var(--font-mono);outline:none;">
-          <option value="free"  ${plan==='free'  ?'selected':''}>FREE</option>
-          <option value="pro"   ${plan==='pro'   ?'selected':''}>PRO</option>
-          <option value="super" ${plan==='super' ?'selected':''}>SUPER</option>
-          <option value="blocked" ${plan==='blocked'?'selected':''}>BLOQUÉ</option>
-        </select>`;
-    } else if (isMod) {
-      // Modérateur : propose Pro ou Super (pas activer directement)
-      actionButtons = `
-        <div style="display:flex;flex-direction:column;gap:3px;">
-          ${plan !== 'pro' && plan !== 'super' && plan !== 'blocked' ? 
-            `<button class="admin-btn pro" onclick="proposeProActivation('${u.id}','${(u.name||'').replace(/'/g,"\'")}','${u.email||''}','pro')" style="font-size:10px;">→ Proposer Pro</button>` : ''}
-          ${plan !== 'super' && plan !== 'blocked' ? 
-            `<button class="admin-btn" style="font-size:10px;border-color:#f4c430;color:#f4c430;" onclick="proposeProActivation('${u.id}','${(u.name||'').replace(/'/g,"\'")}','${u.email||''}','super')">→ Proposer Super</button>` : ''}
-          ${plan === 'super' ? '<span style="font-size:10px;color:#f4c430;font-family:monospace;">✓ Super</span>' : ''}
-        </div>`;
-    }
 
     const el = document.createElement('div');
     el.className = 'user-card';
-    el.innerHTML = `
-      <img src="${u.photo||''}" onerror="this.style.display='none'" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;">
-      <div class="user-card-info" style="min-width:0;">
-        <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
-          ${onlineDot}
-          <span style="font-size:13px;font-weight:500;color:var(--text);">${u.name||'Inconnu'}</span>
-          ${planLabel}
-        </div>
-        <div class="user-card-email">${u.email||''}</div>
-        <div style="font-size:10px;color:var(--text3);font-family:monospace;margin-top:1px;">Connexion: ${lastLoginStr}</div>
-      </div>
-      <div class="user-card-actions" style="flex-direction:column;gap:4px;align-items:flex-end;">
-        ${actionButtons}
-      </div>`;
+
+    // Photo
+    const img = document.createElement('img');
+    img.src = u.photo || '';
+    img.onerror = function(){ this.style.display='none'; };
+    img.style.cssText = 'width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;';
+    el.appendChild(img);
+
+    // Info
+    const info = document.createElement('div');
+    info.className = 'user-card-info';
+    info.style.minWidth = '0';
+
+    const nameRow = document.createElement('div');
+    nameRow.style.cssText = 'display:flex;align-items:center;gap:5px;flex-wrap:wrap;';
+    if (isOnline) {
+      const dot = document.createElement('span');
+      dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:#00d4aa;display:inline-block;flex-shrink:0;';
+      nameRow.appendChild(dot);
+    }
+    const nameSpan = document.createElement('span');
+    nameSpan.style.cssText = 'font-size:13px;font-weight:500;color:var(--text);';
+    nameSpan.textContent = u.name || 'Inconnu';
+    nameRow.appendChild(nameSpan);
+
+    const badge = document.createElement('span');
+    badge.style.cssText = 'font-size:9px;padding:2px 7px;border-radius:10px;font-family:monospace;font-weight:700;background:' + (planBg[plan]||planBg.free) + ';color:' + (planColors[plan]||planColors.free) + ';';
+    badge.textContent = plan.toUpperCase();
+    nameRow.appendChild(badge);
+    info.appendChild(nameRow);
+
+    const emailDiv = document.createElement('div');
+    emailDiv.className = 'user-card-email';
+    emailDiv.textContent = u.email || '';
+    info.appendChild(emailDiv);
+
+    const dateDiv = document.createElement('div');
+    dateDiv.style.cssText = 'font-size:10px;color:var(--text3);font-family:monospace;margin-top:1px;';
+    dateDiv.textContent = 'Connexion: ' + lastLoginStr;
+    info.appendChild(dateDiv);
+    el.appendChild(info);
+
+    // Actions
+    const actions = document.createElement('div');
+    actions.className = 'user-card-actions';
+    actions.style.cssText = 'flex-direction:column;gap:4px;align-items:flex-end;';
+
+    if (isAdmin) {
+      // Sélecteur de plan
+      const sel = document.createElement('select');
+      sel.style.cssText = 'background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:11px;padding:4px 6px;cursor:pointer;font-family:var(--font-mono);outline:none;';
+      ['free','pro','super','blocked'].forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p;
+        opt.textContent = p.toUpperCase();
+        if (p === plan) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      const uid = u.id;
+      sel.addEventListener('change', function() {
+        setUserPlan(uid, this.value);
+      });
+      actions.appendChild(sel);
+    } else if (isMod) {
+      const uid = u.id;
+      const uName = u.name || 'Utilisateur';
+      const uEmail = u.email || '';
+      if (plan !== 'pro' && plan !== 'super' && plan !== 'blocked') {
+        const btnPro = document.createElement('button');
+        btnPro.className = 'admin-btn pro';
+        btnPro.style.fontSize = '10px';
+        btnPro.textContent = '→ Proposer Pro';
+        btnPro.addEventListener('click', function() { proposeProActivation(uid, uName, uEmail, 'pro'); });
+        actions.appendChild(btnPro);
+      }
+      if (plan !== 'super' && plan !== 'blocked') {
+        const btnSuper = document.createElement('button');
+        btnSuper.className = 'admin-btn';
+        btnSuper.style.cssText = 'font-size:10px;border-color:#f4c430;color:#f4c430;';
+        btnSuper.textContent = '→ Proposer Super';
+        btnSuper.addEventListener('click', function() { proposeProActivation(uid, uName, uEmail, 'super'); });
+        actions.appendChild(btnSuper);
+      }
+      if (plan === 'super') {
+        const span = document.createElement('span');
+        span.style.cssText = 'font-size:10px;color:#f4c430;font-family:monospace;';
+        span.textContent = '✓ Super';
+        actions.appendChild(span);
+      }
+    }
+    el.appendChild(actions);
     list.appendChild(el);
   });
 }
 
 async function setUserPlan(uid, plan) {
+  if (!currentUser || currentUser.email !== ADMIN_EMAIL) return;
+  // Mise à jour locale immédiate
+  const u = allUsers.find(x => x.id === uid);
+  const oldPlan = u ? u.plan : 'free';
+  if (u) u.plan = plan;
+  filteredUsers = filteredUsers.map(x => x.id === uid ? {...x, plan} : x);
+  renderAdminUsers();
+  updateAdminStats();
+  // Sauvegarder dans Firestore
   try {
-    await db.collection('users').doc(uid).update({ plan });
-    const u = allUsers.find(x => x.id === uid);
-    if (u) u.plan = plan;
-    filteredUsers = filteredUsers.map(x => x.id === uid ? {...x, plan} : x);
+    await db.collection('users').doc(uid).update({
+      plan: plan,
+      planUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      planUpdatedBy: currentUser.email
+    });
+    console.log('✓ Plan sauvegardé:', uid, plan);
+  } catch(e) {
+    // Rollback si erreur
+    if (u) u.plan = oldPlan;
+    filteredUsers = filteredUsers.map(x => x.id === uid ? {...x, plan: oldPlan} : x);
     renderAdminUsers();
     updateAdminStats();
-    // Vérifier feedbacks non lus
-    checkUnreadFeedbacks();
-    // Badge validations en attente
-    if (currentUser.email === ADMIN_EMAIL) checkPendingApprovals();
-  } catch(e) { alert('Erreur: ' + e.message); }
+    alert('Erreur Firestore: ' + e.message);
+  }
 }
 
 // Vérifier les droits d'accès (admin ou modérateur)
