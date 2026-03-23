@@ -1736,21 +1736,29 @@ function renderAdminUsers() {
     actions.style.cssText = 'flex-direction:column;gap:4px;align-items:flex-end;';
 
     if (isAdmin) {
-      // Sélecteur de plan
-      const sel = document.createElement('select');
-      sel.style.cssText = 'background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:11px;padding:4px 6px;cursor:pointer;font-family:var(--font-mono);outline:none;';
-      ['free','pro','super','blocked'].forEach(p => {
-        const opt = document.createElement('option');
-        opt.value = p;
-        opt.textContent = p.toUpperCase();
-        if (p === plan) opt.selected = true;
-        sel.appendChild(opt);
-      });
-      const uid = u.id;
-      sel.addEventListener('change', function() {
-        setUserPlan(uid, this.value);
-      });
-      actions.appendChild(sel);
+      if (u.id === currentUser.uid) {
+        // Propre compte admin — pas de sélecteur, juste le badge
+        const selfLabel = document.createElement('span');
+        selfLabel.style.cssText = 'font-size:10px;color:#f4c430;font-family:monospace;padding:3px 8px;border:1px solid #f4c430;border-radius:6px;';
+        selfLabel.textContent = '👑 Toi';
+        actions.appendChild(selfLabel);
+      } else {
+        // Autres utilisateurs — sélecteur de plan
+        const sel = document.createElement('select');
+        sel.style.cssText = 'background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:11px;padding:4px 6px;cursor:pointer;font-family:var(--font-mono);outline:none;';
+        ['free','pro','super','blocked'].forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p;
+          opt.textContent = p.toUpperCase();
+          if (p === plan) opt.selected = true;
+          sel.appendChild(opt);
+        });
+        const uid = u.id;
+        sel.addEventListener('change', function() {
+          setUserPlan(uid, this.value);
+        });
+        actions.appendChild(sel);
+      }
     } else if (isMod) {
       const uid = u.id;
       const uName = u.name || 'Utilisateur';
@@ -2199,23 +2207,31 @@ async function removeModerator(uid, name) {
 
 // Modérateur propose activation Pro
 async function proposeProActivation(userId, userName, userEmail, targetPlan) {
-  if (!currentUser || (currentUser.role !== 'moderator' && currentUser.email !== ADMIN_EMAIL)) return;
+  if (!currentUser) return;
+  const isMod = currentUser.role === 'moderator';
+  const isAdmin = currentUser.email === ADMIN_EMAIL;
+  if (!isMod && !isAdmin) { alert('Accès refusé.'); return; }
   const plan = targetPlan || 'pro';
   const planLabel = plan === 'super' ? 'Super' : 'Pro';
-  if (!confirm('Soumettre une demande d\'activation ' + planLabel + ' pour ' + userName + ' ?')) return;
+  if (!confirm('Soumettre une demande ' + planLabel + ' pour ' + userName + ' ?')) return;
   try {
     await db.collection('pro_requests').add({
-      userId,
-      userName,
-      userEmail,
+      userId: userId,
+      userName: userName,
+      userEmail: userEmail,
       targetPlan: plan,
       requestedBy: currentUser.email,
-      requestedByName: currentUser.displayName,
+      requestedByName: currentUser.displayName || currentUser.email,
       requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
       status: 'pending'
     });
-    alert('✓ Demande ' + planLabel + ' envoyée ! L\'administrateur doit valider.');
-  } catch(e) { alert('Erreur: ' + e.message); }
+    // Rafraîchir le badge validations pour l'admin
+    if (isAdmin) checkPendingApprovals();
+    alert('✓ Demande ' + planLabel + ' envoyée avec succès !');
+  } catch(e) {
+    console.error('proposeProActivation error:', e);
+    alert('Erreur: ' + e.message);
+  }
 }
 
 // Admin charge les demandes en attente
@@ -2236,16 +2252,56 @@ async function loadApprovals() {
     snap.docs.forEach(doc => {
       const r = doc.data();
       const date = r.requestedAt ? new Date(r.requestedAt.toMillis()).toLocaleDateString('fr-FR', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+      const targetPlan = r.targetPlan || 'pro';
+      const planLabel = targetPlan === 'super' ? 'Super' : 'Pro';
+      const planColor = targetPlan === 'super' ? '#f4c430' : '#00d4aa';
+
       const el = document.createElement('div');
-      el.style.cssText = 'background:var(--bg2);border:2px solid var(--accent);border-radius:10px;padding:12px 14px;';
-      el.innerHTML = `
-        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">${r.userName || 'Utilisateur'}</div>
-        <div style="font-size:11px;color:var(--text3);font-family:monospace;margin-bottom:4px;">${r.userEmail || ''}</div>
-        <div style="font-size:11px;color:var(--text2);margin-bottom:10px;">Proposé par <strong>${r.requestedByName || r.requestedBy}</strong> · ${date}</div>
-        <div style="display:flex;gap:6px;">
-          <button class="admin-btn pro" style="flex:1;" onclick="approveProRequest('${doc.id}','${r.userId}','${r.userName}','${r.targetPlan||'pro'}')">✓ Approuver ${r.targetPlan==='super'?'Super':'Pro'}</button>
-          <button class="admin-btn block" style="flex:1;" onclick="rejectProRequest('${doc.id}','${r.userName}')">✕ Refuser</button>
-        </div>`;
+      el.style.cssText = 'background:var(--bg2);border:2px solid ' + planColor + ';border-radius:10px;padding:12px 14px;';
+
+      const nameDiv = document.createElement('div');
+      nameDiv.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:6px;';
+      const nameTxt = document.createElement('span');
+      nameTxt.style.cssText = 'font-size:13px;font-weight:700;color:var(--text);flex:1;';
+      nameTxt.textContent = r.userName || 'Utilisateur';
+      const planBadge = document.createElement('span');
+      planBadge.style.cssText = 'font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(244,196,48,0.15);color:' + planColor + ';font-family:monospace;font-weight:700;';
+      planBadge.textContent = planLabel.toUpperCase();
+      nameDiv.appendChild(nameTxt);
+      nameDiv.appendChild(planBadge);
+      el.appendChild(nameDiv);
+
+      const emailDiv = document.createElement('div');
+      emailDiv.style.cssText = 'font-size:11px;color:var(--text3);font-family:monospace;margin-bottom:4px;';
+      emailDiv.textContent = r.userEmail || '';
+      el.appendChild(emailDiv);
+
+      const byDiv = document.createElement('div');
+      byDiv.style.cssText = 'font-size:11px;color:var(--text2);margin-bottom:10px;';
+      byDiv.innerHTML = 'Proposé par <strong>' + (r.requestedByName || r.requestedBy) + '</strong> · ' + date;
+      el.appendChild(byDiv);
+
+      const btnRow = document.createElement('div');
+      btnRow.style.cssText = 'display:flex;gap:6px;';
+
+      const btnApprove = document.createElement('button');
+      btnApprove.className = 'admin-btn pro';
+      btnApprove.style.cssText = 'flex:1;font-size:12px;padding:6px;';
+      btnApprove.innerHTML = '✓ Approuver ' + planLabel;
+      const docId = doc.id;
+      const userId = r.userId;
+      const userName = r.userName;
+      btnApprove.addEventListener('click', () => approveProRequest(docId, userId, userName, targetPlan));
+
+      const btnReject = document.createElement('button');
+      btnReject.className = 'admin-btn block';
+      btnReject.style.cssText = 'flex:1;font-size:12px;padding:6px;';
+      btnReject.innerHTML = '✕ Refuser';
+      btnReject.addEventListener('click', () => rejectProRequest(docId, userName));
+
+      btnRow.appendChild(btnApprove);
+      btnRow.appendChild(btnReject);
+      el.appendChild(btnRow);
       list.appendChild(el);
     });
   } catch(e) {
@@ -2289,12 +2345,20 @@ async function checkPendingApprovals() {
     const snap = await db.collection('pro_requests').where('status', '==', 'pending').get();
     const count = snap.size;
     const tabA = document.getElementById('tab-approvals');
-    if (tabA && count > 0) {
-      tabA.textContent = '✅ Validations (' + count + ')';
-      tabA.style.color = 'var(--accent3)';
-      tabA.style.borderColor = 'var(--accent3)';
+    if (tabA) {
+      if (count > 0) {
+        tabA.textContent = '✅ Validations (' + count + ')';
+        tabA.style.color = '#fff';
+        tabA.style.background = 'var(--accent3)';
+        tabA.style.borderColor = 'var(--accent3)';
+      } else {
+        tabA.textContent = '✅ Validations';
+        tabA.style.color = '';
+        tabA.style.background = '';
+        tabA.style.borderColor = '';
+      }
     }
-  } catch(e) {}
+  } catch(e) { console.error('checkPendingApprovals:', e); }
 }
 
 // ===== MESSAGERIE SUPPORT =====
@@ -2571,32 +2635,92 @@ async function deleteFeedback(id) {
 }
 
 async function loadModUsers() {
-  const content = document.getElementById('mod-content');
-  if (!content) return;
-  content.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);">Chargement...</div>';
+  const div = document.getElementById('mod-content');
+  if (!div) return;
+  div.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);">Chargement...</div>';
   try {
     const snap = await db.collection('users').get();
     const users = snap.docs.map(d => ({id: d.id, ...d.data()}));
-    content.innerHTML = '';
+    div.innerHTML = '';
     if (!users.length) {
-      content.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);">Aucun utilisateur</div>';
+      div.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);">Aucun utilisateur</div>';
       return;
     }
+    const planColors = {free:'var(--text3)',pro:'#00d4aa',super:'#f4c430',blocked:'var(--accent3)'};
+    const planBg = {free:'rgba(139,149,168,0.15)',pro:'rgba(0,212,170,0.15)',super:'rgba(244,196,48,0.15)',blocked:'rgba(255,107,74,0.15)'};
     users.forEach(u => {
       const plan = u.plan || 'free';
       const el = document.createElement('div');
       el.className = 'user-card';
-      el.innerHTML = `
-        <img src="${u.photo||''}" onerror="this.style.display='none'" style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;">
-        <div class="user-card-info">
-          <div class="user-card-name">${u.name||'Inconnu'} <span class="plan-badge plan-${plan}">${plan.toUpperCase()}</span></div>
-          <div class="user-card-email">${u.email||''}</div>
-        </div>
-        ${plan !== 'pro' ? `<button class="admin-btn pro" onclick="proposeProActivation('${u.id}','${(u.name||'').replace(/'/g,"\'")}','${u.email||''}')" style="font-size:10px;">Proposer Pro</button>` : '<span style="font-size:10px;color:var(--accent2);font-family:monospace;">✓ Pro</span>'}`;
-      content.appendChild(el);
+      el.style.cssText = 'display:flex;align-items:center;gap:10px;';
+
+      // Photo
+      const img = document.createElement('img');
+      img.src = u.photo || '';
+      img.onerror = function(){ this.style.display='none'; };
+      img.style.cssText = 'width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;';
+      el.appendChild(img);
+
+      // Info
+      const info = document.createElement('div');
+      info.className = 'user-card-info';
+      info.style.flex = '1';
+      const nameDiv = document.createElement('div');
+      nameDiv.style.cssText = 'display:flex;align-items:center;gap:6px;';
+      const nameSpan = document.createElement('span');
+      nameSpan.style.cssText = 'font-size:13px;font-weight:500;color:var(--text);';
+      nameSpan.textContent = u.name || 'Inconnu';
+      const badge = document.createElement('span');
+      badge.style.cssText = 'font-size:9px;padding:2px 7px;border-radius:10px;font-family:monospace;font-weight:700;background:' + (planBg[plan]||planBg.free) + ';color:' + (planColors[plan]||planColors.free) + ';';
+      badge.textContent = plan.toUpperCase();
+      nameDiv.appendChild(nameSpan);
+      nameDiv.appendChild(badge);
+      info.appendChild(nameDiv);
+      const emailDiv = document.createElement('div');
+      emailDiv.className = 'user-card-email';
+      emailDiv.textContent = u.email || '';
+      info.appendChild(emailDiv);
+      el.appendChild(info);
+
+      // Boutons propose
+      const btns = document.createElement('div');
+      btns.style.cssText = 'display:flex;flex-direction:column;gap:4px;';
+      const uid = u.id;
+      const uName = u.name || 'Utilisateur';
+      const uEmail = u.email || '';
+
+      if (plan !== 'pro' && plan !== 'super' && plan !== 'blocked') {
+        const btnPro = document.createElement('button');
+        btnPro.className = 'admin-btn pro';
+        btnPro.style.cssText = 'font-size:11px;padding:4px 10px;';
+        btnPro.innerHTML = '⭐ Proposer Pro';
+        btnPro.addEventListener('click', () => proposeProActivation(uid, uName, uEmail, 'pro'));
+        btns.appendChild(btnPro);
+      }
+      if (plan !== 'super' && plan !== 'blocked') {
+        const btnSuper = document.createElement('button');
+        btnSuper.className = 'admin-btn';
+        btnSuper.style.cssText = 'font-size:11px;padding:4px 10px;border-color:#f4c430;color:#f4c430;';
+        btnSuper.innerHTML = '✨ Proposer Super';
+        btnSuper.addEventListener('click', () => proposeProActivation(uid, uName, uEmail, 'super'));
+        btns.appendChild(btnSuper);
+      }
+      if (plan === 'super') {
+        const ok = document.createElement('span');
+        ok.style.cssText = 'font-size:11px;color:#f4c430;font-family:monospace;';
+        ok.textContent = '✓ Super';
+        btns.appendChild(ok);
+      } else if (plan === 'pro') {
+        const ok = document.createElement('span');
+        ok.style.cssText = 'font-size:11px;color:#00d4aa;font-family:monospace;';
+        ok.textContent = '✓ Pro';
+        btns.appendChild(ok);
+      }
+      el.appendChild(btns);
+      div.appendChild(el);
     });
   } catch(e) {
-    content.innerHTML = '<div style="color:var(--accent3);padding:10px;font-size:12px;">Erreur: ' + e.message + '</div>';
+    div.innerHTML = '<div style="color:var(--accent3);padding:10px;font-size:12px;">Erreur: ' + e.message + '</div>';
   }
 }
 
