@@ -2957,109 +2957,115 @@ Réponds UNIQUEMENT avec un JSON valide (pas de markdown) avec cette structure e
 }
 
 function renderCVHtml(cv) {
-  // Générer barres compétences
-  const skillBars = (cv.skills||[]).map((s,i) => {
-    const levels = [90,75,85,70,80,65,95,72,88,78];
-    const lvl = levels[i % levels.length];
-    return `<div style="margin-bottom:10px;">
-      <div style="font-size:11px;color:#ccc;margin-bottom:3px;">${s}</div>
-      <div style="background:rgba(255,255,255,0.15);border-radius:3px;height:4px;">
-        <div style="background:#4a9fd4;width:${lvl}%;height:4px;border-radius:3px;"></div>
-      </div>
-    </div>`;
-  }).join('');
+  const skills = (cv.skills||[]);
+  const langs = (cv.languages||[]);
+  const exps = (cv.experiences||[]);
+  const edus = (cv.educations||[]);
 
-  // Barres langues
-  const langBars = (cv.languages||[]).map((l,i) => {
-    const levels = [100,85,65,50];
-    const lvl = levels[i % levels.length];
-    return `<div style="margin-bottom:10px;">
-      <div style="font-size:11px;color:#ccc;margin-bottom:3px;">${l}</div>
-      <div style="background:rgba(255,255,255,0.15);border-radius:3px;height:4px;">
-        <div style="background:#4a9fd4;width:${lvl}%;height:4px;border-radius:3px;"></div>
+  const skillBars = skills.map(s=>`
+    <div style="margin-bottom:8px;">
+      <div style="font-size:10px;color:#ccc;margin-bottom:3px;font-family:Arial;">${s}</div>
+      <div style="background:rgba(255,255,255,0.2);border-radius:3px;height:3px;">
+        <div style="background:#5b9bd5;height:3px;border-radius:3px;width:${65+Math.floor(Math.random()*30)}%;"></div>
       </div>
-    </div>`;
-  }).join('');
-
-  // Expériences
-  const experiences = (cv.experiences||[]).map(e => `
-    <div style="margin-bottom:16px;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px;">
-        <div style="font-weight:700;font-size:13px;color:#1a1a2e;">${e.poste||''}</div>
-        <div style="font-size:11px;color:#666;white-space:nowrap;">${e.periode||''}</div>
-      </div>
-      <div style="font-size:12px;color:#4a6fa5;margin-bottom:3px;">${e.entreprise||''}</div>
-      ${e.description ? `<div style="font-size:12px;color:#555;line-height:1.6;">${e.description}</div>` : ''}
     </div>`).join('');
 
-  // Formations
-  const educations = (cv.educations||[]).map(e => `
-    <div style="margin-bottom:14px;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px;">
-        <div style="font-weight:700;font-size:13px;color:#1a1a2e;">${e.diplome||''}</div>
-        <div style="font-size:11px;color:#666;">${e.annee||''}</div>
+  const langBars = langs.map(l=>`
+    <div style="margin-bottom:8px;">
+      <div style="font-size:10px;color:#ccc;margin-bottom:3px;font-family:Arial;">${l}</div>
+      <div style="background:rgba(255,255,255,0.2);border-radius:3px;height:3px;">
+        <div style="background:#5b9bd5;height:3px;border-radius:3px;width:${60+Math.floor(Math.random()*35)}%;"></div>
       </div>
-      <div style="font-size:12px;color:#4a6fa5;">${e.ecole||''}</div>
     </div>`).join('');
 
-  // Section titre colorée
-  const sectionTitle = (title) => `
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;margin-top:20px;">
-      <div style="background:#1a3a6b;color:#fff;font-size:10px;font-weight:700;letter-spacing:1.5px;padding:4px 10px;text-transform:uppercase;">${title}</div>
-    </div>`;
+  const expHtml = exps.map(e=>`
+    <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #eee;">
+      <table style="width:100%;border-collapse:collapse;"><tr>
+        <td style="font-size:12px;font-weight:700;color:#1a1a2e;font-family:Arial;">${e.poste||''}</td>
+        <td style="font-size:10px;color:#888;font-style:italic;text-align:right;white-space:nowrap;font-family:Arial;">${e.periode||''}</td>
+      </tr></table>
+      <div style="font-size:11px;color:#5b9bd5;font-style:italic;margin-top:2px;font-family:Arial;">${e.entreprise||''}</div>
+      ${e.description?`<div style="font-size:11px;color:#555;line-height:1.6;margin-top:4px;font-family:Arial;">${e.description}</div>`:''}
+    </div>`).join('');
 
-  const html = `<div id="cv-print" style="background:#fff;font-family:Arial,sans-serif;max-width:800px;margin:0 auto;box-shadow:0 4px 30px rgba(0,0,0,0.2);display:flex;min-height:900px;">
-    
-    <!-- SIDEBAR GAUCHE -->
-    <div style="width:240px;min-width:240px;background:#2c3e50;color:#fff;padding:0;flex-shrink:0;">
-      
-      <!-- Photo + nom -->
-      <div style="background:#1a3a6b;padding:24px 16px;text-align:center;">
-        <div style="width:90px;height:90px;border-radius:50%;border:3px solid #4a9fd4;overflow:hidden;margin:0 auto 12px;background:#ccc;">
-          ${cv.photo ? `<img src="${cv.photo}" style="width:100%;height:100%;object-fit:cover;">` : 
-          `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:36px;background:#4a6fa5;color:#fff;">${(cv.name||'?')[0].toUpperCase()}</div>`}
-        </div>
-        <div style="font-size:11px;color:#4a9fd4;letter-spacing:1px;text-transform:uppercase;">${cv.title||''}</div>
+  const eduHtml = edus.map(e=>`
+    <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #eee;">
+      <table style="width:100%;border-collapse:collapse;"><tr>
+        <td style="font-size:12px;font-weight:700;color:#1a1a2e;font-family:Arial;">${e.diplome||''}</td>
+        <td style="font-size:10px;color:#888;font-style:italic;text-align:right;white-space:nowrap;font-family:Arial;">${e.annee||''}</td>
+      </tr></table>
+      <div style="font-size:11px;color:#5b9bd5;font-style:italic;margin-top:2px;font-family:Arial;">${e.ecole||''}</div>
+    </div>`).join('');
+
+  const cvHTML = `
+<div id="cv-print" style="display:table;width:780px;min-height:1000px;background:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.2);font-family:Arial,sans-serif;">
+
+  <!-- SIDEBAR GAUCHE -->
+  <div style="display:table-cell;width:220px;background:#2c3e50;vertical-align:top;padding:0;">
+    <!-- Photo zone -->
+    <div style="background:#34495e;padding:24px 16px;text-align:center;">
+      <div style="width:80px;height:80px;border-radius:50%;background:#5b9bd5;margin:0 auto 10px;border:3px solid #5b9bd5;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+        <span style="font-size:32px;">👤</span>
       </div>
+      <div style="font-size:9px;color:#aaa;letter-spacing:1px;text-transform:uppercase;">NexusAI</div>
+    </div>
 
-      <!-- Coordonnées -->
-      <div style="padding:16px;border-bottom:1px solid rgba(255,255,255,0.1);">
-        ${cv.email ? `<div style="font-size:11px;color:#ccc;margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span style="color:#4a9fd4;">✉</span>${cv.email}</div>` : ''}
-        ${cv.phone ? `<div style="font-size:11px;color:#ccc;margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span style="color:#4a9fd4;">☏</span>${cv.phone}</div>` : ''}
-        ${cv.location ? `<div style="font-size:11px;color:#ccc;display:flex;align-items:center;gap:6px;"><span style="color:#4a9fd4;">⌂</span>${cv.location}</div>` : ''}
+    <div style="padding:16px 14px;">
+      <!-- Contact -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:9px;font-weight:700;color:#5b9bd5;text-transform:uppercase;letter-spacing:2px;border-bottom:1px solid #5b9bd5;padding-bottom:4px;margin-bottom:8px;font-family:Arial;">Contact</div>
+        ${cv.email?`<div style="font-size:10px;color:#ccc;margin-bottom:5px;font-family:Arial;">✉ ${cv.email}</div>`:''}
+        ${cv.phone?`<div style="font-size:10px;color:#ccc;margin-bottom:5px;font-family:Arial;">☎ ${cv.phone}</div>`:''}
+        ${cv.location?`<div style="font-size:10px;color:#ccc;margin-bottom:5px;font-family:Arial;">⌂ ${cv.location}</div>`:''}
+        ${cv.linkedin?`<div style="font-size:10px;color:#ccc;margin-bottom:5px;font-family:Arial;">in ${cv.linkedin}</div>`:''}
       </div>
 
       <!-- Compétences -->
-      ${skillBars ? `<div style="padding:16px;border-bottom:1px solid rgba(255,255,255,0.1);">
-        <div style="font-size:10px;letter-spacing:2px;color:#4a9fd4;text-transform:uppercase;font-weight:700;margin-bottom:12px;">Compétences</div>
+      ${skillBars?`<div style="margin-bottom:16px;">
+        <div style="font-size:9px;font-weight:700;color:#5b9bd5;text-transform:uppercase;letter-spacing:2px;border-bottom:1px solid #5b9bd5;padding-bottom:4px;margin-bottom:8px;font-family:Arial;">Compétences</div>
         ${skillBars}
-      </div>` : ''}
+      </div>`:''}
 
       <!-- Langues -->
-      ${langBars ? `<div style="padding:16px;">
-        <div style="font-size:10px;letter-spacing:2px;color:#4a9fd4;text-transform:uppercase;font-weight:700;margin-bottom:12px;">Langues</div>
+      ${langBars?`<div style="margin-bottom:16px;">
+        <div style="font-size:9px;font-weight:700;color:#5b9bd5;text-transform:uppercase;letter-spacing:2px;border-bottom:1px solid #5b9bd5;padding-bottom:4px;margin-bottom:8px;font-family:Arial;">Langues</div>
         ${langBars}
-      </div>` : ''}
+      </div>`:''}
+    </div>
+  </div>
+
+  <!-- CONTENU DROIT -->
+  <div style="display:table-cell;vertical-align:top;background:#fff;">
+    <!-- En-tête -->
+    <div style="background:#5b9bd5;padding:24px 24px 18px;">
+      <div style="font-size:20px;font-weight:800;color:#fff;letter-spacing:2px;text-transform:uppercase;font-family:Arial;">${(cv.name||'').toUpperCase()}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.9);margin-top:4px;letter-spacing:1px;font-family:Arial;">${cv.title||''}</div>
     </div>
 
-    <!-- CONTENU PRINCIPAL -->
-    <div style="flex:1;padding:0;background:#fff;">
-      
-      <!-- En-tête nom -->
-      <div style="background:#1a3a6b;padding:28px 28px 20px;">
-        <div style="font-size:24px;font-weight:900;color:#fff;letter-spacing:2px;text-transform:uppercase;">${cv.name||''}</div>
-        ${cv.summary ? `<div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:8px;line-height:1.6;">${cv.summary}</div>` : ''}
-      </div>
+    <div style="padding:20px 24px;">
+      <!-- Profil -->
+      ${cv.summary?`<div style="margin-bottom:18px;">
+        <div style="font-size:9px;font-weight:700;color:#5b9bd5;text-transform:uppercase;letter-spacing:2px;border-bottom:2px solid #5b9bd5;padding-bottom:3px;margin-bottom:8px;font-family:Arial;">Profil</div>
+        <div style="font-size:11px;color:#444;line-height:1.7;font-family:Arial;">${cv.summary}</div>
+      </div>`:''}
 
-      <!-- Corps -->
-      <div style="padding:20px 28px;">
-        ${educations ? sectionTitle('Formation') + educations : ''}
-        ${experiences ? sectionTitle('Expérience professionnelle') + experiences : ''}
-      </div>
+      <!-- Formation -->
+      ${eduHtml?`<div style="margin-bottom:18px;">
+        <div style="font-size:9px;font-weight:700;color:#5b9bd5;text-transform:uppercase;letter-spacing:2px;border-bottom:2px solid #5b9bd5;padding-bottom:3px;margin-bottom:10px;font-family:Arial;">Formation</div>
+        ${eduHtml}
+      </div>`:''}
+
+      <!-- Expériences -->
+      ${expHtml?`<div style="margin-bottom:18px;">
+        <div style="font-size:9px;font-weight:700;color:#5b9bd5;text-transform:uppercase;letter-spacing:2px;border-bottom:2px solid #5b9bd5;padding-bottom:3px;margin-bottom:10px;font-family:Arial;">Expérience professionnelle</div>
+        ${expHtml}
+      </div>`:''}
     </div>
-  </div>`;
+  </div>
 
-  document.getElementById('cv-output').innerHTML = html;
+</div>`;
+
+  document.getElementById('cv-output').innerHTML = cvHTML;
 }
 
 function copyCV() {
@@ -3068,18 +3074,24 @@ function copyCV() {
 }
 
 function printCV() {
-  const cvHtml = document.getElementById('cv-output').innerHTML;
+  const cvContent = document.getElementById('cv-print');
+  if (!cvContent) { alert('Génère le CV d\'abord !'); return; }
   const win = window.open('', '_blank');
-  win.document.write(`<!DOCTYPE html><html><head><title>CV — NexusAI</title>
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { background:#fff; font-family:Arial,sans-serif; }
-    @media print {
-      body { margin:0; }
-      @page { margin:0; size:A4; }
-    }
-  </style>
-  </head><body>${cvHtml}<script>window.onload=()=>{ setTimeout(()=>window.print(),500); }<\/script></body></html>`);
+  win.document.write(`<!DOCTYPE html>
+<html><head><title>CV</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body { background:#fff; }
+  @page { margin:0; size:A4 portrait; }
+  @media print { body { margin:0; } }
+</style>
+</head><body>
+${cvContent.outerHTML}
+<script>window.onload=function(){ setTimeout(function(){ window.print(); },800); }<\/script>
+</body></html>`);
+  win.document.close();
+}
+int(),500); }<\/script></body></html>`);
   win.document.close();
 }
 
